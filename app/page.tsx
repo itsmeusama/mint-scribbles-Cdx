@@ -115,10 +115,10 @@ export default function Home() {
     const data = new FormData(event.currentTarget);
     const payment = data.get("payment") === "deposit" ? "Bank deposit" : "Pay at collection";
     const orderLines = cart.map((item) => `${item.quantity} × ${item.name} — ${money(item.price * item.quantity)}`).join("\n");
-    const subject = encodeURIComponent(`New Paper & Parcel order request — ${data.get("name")}`);
+    const subject = encodeURIComponent(`New Mints Scribles order request — ${data.get("name")}`);
     const body = encodeURIComponent(`Customer: ${data.get("name")}\nEmail: ${data.get("email")}\nPhone: ${data.get("phone")}\nCollection day: ${data.get("collection")}\nPayment: ${payment}\n\n${orderLines}\n\nTotal: ${money(subtotal)}\n\nNotes: ${data.get("notes") || "None"}`);
     setOrderPlaced(true);
-    window.location.href = `mailto:orders@paperandparcel.co.uk?subject=${subject}&body=${body}`;
+    window.location.href = `mailto:orders@mintsscribles.co.uk?subject=${subject}&body=${body}`;
   };
 
   return (
@@ -127,14 +127,14 @@ export default function Home() {
 
       <header className="site-header">
         <button className="menu-button" onClick={() => setMenuOpen(!menuOpen)} aria-expanded={menuOpen} aria-controls="main-nav">Menu</button>
-        <a className="brand" href="#top" aria-label="Paper and Parcel home">
-          <span>Paper &amp; Parcel</span>
+        <a className="brand" href="#top" aria-label="Mints Scribles home">
+          <span>Mints Scribles</span>
           <small>Stationery studio</small>
         </a>
         <nav id="main-nav" className={menuOpen ? "nav open" : "nav"} aria-label="Main navigation">
           <a href="#bundles" onClick={() => setMenuOpen(false)}>Shop bundles</a>
           <a href="#pieces" onClick={() => setMenuOpen(false)}>Individual pieces</a>
-          <a href="#build" onClick={() => setMenuOpen(false)}>Build your own</a>
+          <span className="nav-coming" aria-disabled="true">Custom bundles <small>Coming soon</small></span>
           <a href="#story" onClick={() => setMenuOpen(false)}>Our story</a>
         </nav>
         <button className="bag-button" onClick={() => setCartOpen(true)} aria-label={`Open bag with ${itemCount} items`}>
@@ -146,10 +146,10 @@ export default function Home() {
         <div className="hero-copy">
           <p className="eyebrow">Curated for the everyday</p>
           <h1>Thoughtful stationery, <em>bundled beautifully.</em></h1>
-          <p className="hero-intro">Considered paper goods for desks, studies and handwritten moments. Choose a ready-made edit, shop the pieces you love, or create a bundle entirely your own.</p>
+          <p className="hero-intro">Considered paper goods for desks, studies and handwritten moments. Choose a ready-made edit or shop the individual pieces you love. Custom bundles are coming soon.</p>
           <div className="hero-actions">
             <a className="button primary" href="#bundles">Shop curated bundles</a>
-            <a className="button secondary" href="#build">Build your own</a>
+            <span className="button secondary disabled-action" aria-disabled="true">Custom bundles · Coming soon</span>
           </div>
           <p className="payment-note"><span>✓</span> No online payment needed — reserve now, pay by deposit or at collection.</p>
         </div>
@@ -180,23 +180,24 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="build-section" id="build">
+      <section className="build-section coming-soon-section" id="build" aria-labelledby="custom-bundle-title">
         <div className="builder-copy">
-          <p className="eyebrow light">Make it personal</p>
-          <h2>Your bundle, their kind of lovely.</h2>
-          <p>Pick any two or more pieces. We will gather them in our signature tissue, add a handwritten label, and have everything ready for collection.</p>
+          <p className="eyebrow light">Coming soon</p>
+          <h2 id="custom-bundle-title">Custom bundles are on their way.</h2>
+          <p>We are preparing a new way to choose your favourite pieces and have them wrapped together. This feature is not available to order just yet.</p>
           <ul>
             <li>Choose exactly what goes inside</li>
-            <li>Save £3 when you select four or more pieces</li>
-            <li>Complimentary gift note included</li>
+            <li>Create thoughtful gifts for any occasion</li>
+            <li>Add a complimentary handwritten note</li>
           </ul>
         </div>
         <div className="builder-panel">
-          <div className="builder-title"><span>Choose your pieces</span><strong>{builderItems.length} selected</strong></div>
+          <div className="builder-coming-badge">Preview · Coming soon</div>
+          <div className="builder-title"><span>Choose your pieces</span><strong>Not yet available</strong></div>
           <div className="builder-options">
             {individualItems.map((item) => (
-              <label key={item.id} className={builder.includes(item.id) ? "builder-option selected" : "builder-option"}>
-                <input type="checkbox" checked={builder.includes(item.id)} onChange={() => toggleBuilderItem(item.id)} />
+              <label key={item.id} className={builder.includes(item.id) ? "builder-option selected locked" : "builder-option locked"} aria-disabled="true">
+                <input type="checkbox" checked={builder.includes(item.id)} onChange={() => toggleBuilderItem(item.id)} disabled />
                 <span className={`mini-visual ${item.visual}`} aria-hidden="true" />
                 <span><strong>{item.name}</strong><small>{money(item.price)}</small></span>
               </label>
@@ -204,9 +205,9 @@ export default function Home() {
           </div>
           <div className="builder-total">
             <span><small>Custom bundle total</small><strong>{money(builderPrice)}</strong></span>
-            <button className="button blush" disabled={builderItems.length < 2} onClick={() => addToCart(builderProduct)}>Add custom bundle</button>
+            <button className="button blush" disabled onClick={() => addToCart(builderProduct)}>Coming soon</button>
           </div>
-          {builderItems.length < 2 && <p className="builder-hint">Choose at least two pieces to make a bundle.</p>}
+          <p className="builder-hint">Custom bundle ordering will be enabled in a future update.</p>
         </div>
       </section>
 
@@ -221,7 +222,7 @@ export default function Home() {
       </section>
 
       <section className="story-section" id="story">
-        <div className="story-note"><span>A note from our table</span><p>“We choose stationery the way we choose books: for how it feels in the hand, how well it lasts, and the small ritual it creates.”</p><small>— The Paper &amp; Parcel studio</small></div>
+        <div className="story-note"><span>A note from our table</span><p>“We choose stationery the way we choose books: for how it feels in the hand, how well it lasts, and the small ritual it creates.”</p><small>— The Mints Scribles studio</small></div>
         <div className="story-copy"><p className="eyebrow">Small-batch, thoughtfully gathered</p><h2>Nothing added just to fill the box.</h2><p>Every Paper &amp; Parcel edit is built around useful pieces from independent paper makers. We favour recycled stocks, low-plastic packaging and timeless details that will be used, not tucked away.</p><div className="story-stats"><span><strong>12</strong><small>Independent makers</small></span><span><strong>100%</strong><small>Plastic-free wrapping</small></span><span><strong>2–3 days</strong><small>Collection ready</small></span></div></div>
       </section>
 
@@ -232,11 +233,11 @@ export default function Home() {
       </section>
 
       <footer>
-        <div className="footer-brand"><span>Paper &amp; Parcel</span><small>Stationery for slower, lovelier moments.</small></div>
-        <div><strong>Visit</strong><a href="#bundles">Curated bundles</a><a href="#pieces">Individual pieces</a><a href="#build">Custom bundles</a></div>
+        <div className="footer-brand"><span>Mints Scribles</span><small>Stationery for slower, lovelier moments.</small></div>
+        <div><strong>Visit</strong><a href="#bundles">Curated bundles</a><a href="#pieces">Individual pieces</a><span className="footer-disabled">Custom bundles · Coming soon</span></div>
         <div><strong>Collection</strong><p>Tuesday–Saturday<br />10:00–17:00<br />London studio</p></div>
-        <div><strong>Keep in touch</strong><a href="mailto:hello@paperandparcel.co.uk">hello@paperandparcel.co.uk</a><p>@paperandparcel</p></div>
-        <p className="copyright">© 2026 Paper &amp; Parcel · Made carefully, collected locally.</p>
+        <div><strong>Keep in touch</strong><a href="mailto:hello@mintsscribles.co.uk">hello@mintsscribles.co.uk</a><p>@mintsscribles</p></div>
+        <p className="copyright">© 2026 Mints Scribles · Made carefully, collected locally.</p>
       </footer>
 
       {toast && <div className="toast" role="status">{toast}<button onClick={() => setCartOpen(true)}>View bag</button></div>}
