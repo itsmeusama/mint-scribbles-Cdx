@@ -1,5 +1,4 @@
 import { getD1 } from "../../../db";
-import { findProduct } from "../../../lib/catalog";
 
 type OrderRequest = {
   customerName?: unknown;
@@ -12,6 +11,12 @@ type OrderRequest = {
 };
 
 type RequestedItem = { productId?: unknown; quantity?: unknown };
+type CatalogueProduct = {
+  id: string;
+  name: string;
+  price_pence: number;
+  visual: string;
+};
 
 const COLLECTION_DAYS = new Set(["Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]);
 const PAYMENT_METHODS = new Set(["collection", "deposit"]);
@@ -69,13 +74,24 @@ export async function POST(request: Request) {
       quantities.set(productId, combinedQuantity);
     }
 
+    const d1 = getD1();
+    const productIds = Array.from(quantities.keys());
+    const placeholders = productIds.map(() => "?").join(", ");
+    const catalogue = await d1.prepare(`
+      SELECT id, name, price_pence, visual
+      FROM products
+      WHERE id IN (${placeholders}) AND archived = 0 AND available = 1
+    `).bind(...productIds).all<CatalogueProduct>();
+    const productsById = new Map(catalogue.results.map((product) => [product.id, product]));
+
     const items = Array.from(quantities, ([productId, quantity]) => {
-      const product = findProduct(productId);
-      if (!product || product.category === "Custom") return null;
-      const unitPricePence = Math.round(product.price * 100);
+      const product = productsById.get(productId);
+      if (!product) return null;
+      const unitPricePence = product.price_pence;
       return {
         productId,
         productName: product.name,
+        productVisual: product.visual,
         unitPricePence,
         quantity,
         lineTotalPence: unitPricePence * quantity,
@@ -90,7 +106,6 @@ export async function POST(request: Request) {
     const subtotalPence = validItems.reduce((sum, item) => sum + item.lineTotalPence, 0);
     const id = crypto.randomUUID();
     const reference = createOrderReference();
-    const d1 = getD1();
 
     await d1.batch([
       d1.prepare(`
@@ -105,9 +120,10 @@ export async function POST(request: Request) {
       `).bind(id),
       ...validItems.map((item) => d1.prepare(`
         INSERT INTO order_items (
-          order_id, product_id, product_name, unit_price_pence, quantity, line_total_pence
-        ) VALUES (?, ?, ?, ?, ?, ?)
-      `).bind(id, item.productId, item.productName, item.unitPricePence, item.quantity, item.lineTotalPence)),
+          order_id, product_id, product_name, unit_price_pence, quantity,
+          line_total_pence, product_visual
+        ) VALUES (?, ?, ?, ?, ?, ?, ?)
+      `).bind(id, item.productId, item.productName, item.unitPricePence, item.quantity, item.lineTotalPence, item.productVisual)),
     ]);
 
     return Response.json({ reference }, { status: 201 });

@@ -1,29 +1,52 @@
-export default function AdminProductsPage() {
+import { asc } from "drizzle-orm";
+import { getDb } from "../../../db";
+import { products as productsTable } from "../../../db/schema";
+import { isProductCategory, isProductVisual, type Product } from "../../../lib/catalog";
+import { getMintAdminAccess } from "../../admin-access";
+import ProductManager from "./ProductManager";
+
+export const dynamic = "force-dynamic";
+
+async function loadProducts() {
+  const rows = await getDb().select().from(productsTable).orderBy(asc(productsTable.sortOrder), asc(productsTable.name));
+  return rows.map((product): Product & { archived: boolean; sortOrder: number } => ({
+    id: product.id,
+    name: product.name,
+    price: product.pricePence / 100,
+    category: isProductCategory(product.category) ? product.category : "Individual",
+    description: product.description,
+    contents: product.contents,
+    visual: isProductVisual(product.visual) ? product.visual : "notebook",
+    badge: product.badge,
+    available: product.available,
+    archived: product.archived,
+    sortOrder: product.sortOrder,
+  }));
+}
+
+export default async function AdminProductsPage() {
+  const { isOwner } = await getMintAdminAccess("/admin/products");
+  if (!isOwner) return null;
+  const products = await loadProducts().catch(() => null);
+
   return (
     <main className="admin-content">
       <div className="admin-page-heading compact">
         <div>
           <p className="admin-kicker">Products</p>
-          <h1>Shop catalogue</h1>
-          <p>Simple product management will be added in a later phase.</p>
+          <h1>Manage the catalogue</h1>
+          <p>Add products, update prices and details, control availability, or archive items safely.</p>
         </div>
+        <span className="admin-status-pill">Phase 5</span>
       </div>
 
-      <section className="admin-empty-state">
-        <span className="admin-empty-icon" aria-hidden="true">◇</span>
-        <p className="admin-kicker">Coming in Phase 5</p>
-        <h2>Products will be easy to manage here.</h2>
-        <p>
-          The owner will be able to add products, change prices, mark items sold
-          out, and archive products using a simple form.
-        </p>
-        <div className="admin-preview-row products" aria-label="Future product actions">
-          <span>Add product</span>
-          <span>Edit details</span>
-          <span>Availability</span>
-          <span>Archive</span>
-        </div>
-      </section>
+      {products ? <ProductManager products={products} /> : (
+        <section className="admin-empty-state">
+          <span className="admin-empty-icon" aria-hidden="true">!</span>
+          <h2>The catalogue manager is temporarily unavailable.</h2>
+          <p>Please refresh in a moment. Existing shop products are unaffected.</p>
+        </section>
+      )}
     </main>
   );
 }

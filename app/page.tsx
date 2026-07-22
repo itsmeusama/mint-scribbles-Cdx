@@ -1,13 +1,16 @@
 "use client";
 
-import { FormEvent, useMemo, useState } from "react";
-import { bundles, individualItems, type Product } from "../lib/catalog";
+import { FormEvent, useEffect, useState } from "react";
+import type { Product } from "../lib/catalog";
 
 type CartItem = Product & { quantity: number };
 
 const money = (value: number) => `£${value.toFixed(2)}`;
 
 export default function Home() {
+  const [catalogue, setCatalogue] = useState<Product[]>([]);
+  const [catalogueLoading, setCatalogueLoading] = useState(true);
+  const [catalogueError, setCatalogueError] = useState("");
   const [cart, setCart] = useState<CartItem[]>([]);
   const [cartOpen, setCartOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -19,22 +22,34 @@ export default function Home() {
   const [submittingOrder, setSubmittingOrder] = useState(false);
   const [toast, setToast] = useState("");
 
+  const bundles = catalogue.filter((product) => product.category === "Bundle");
+  const individualItems = catalogue.filter((product) => product.category === "Individual");
+
+  useEffect(() => {
+    let active = true;
+    fetch("/api/catalog", { cache: "no-store" })
+      .then(async (response) => {
+        const result = await response.json() as { products?: Product[]; error?: string };
+        if (!response.ok || !result.products) throw new Error(result.error || "The catalogue could not be loaded.");
+        if (active) setCatalogue(result.products);
+      })
+      .catch((error) => {
+        if (active) setCatalogueError(error instanceof Error ? error.message : "The catalogue could not be loaded.");
+      })
+      .finally(() => {
+        if (active) setCatalogueLoading(false);
+      });
+
+    return () => { active = false; };
+  }, []);
+
   const itemCount = cart.reduce((sum, item) => sum + item.quantity, 0);
   const subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const builderItems = individualItems.filter((item) => builder.includes(item.id));
   const builderPrice = Math.max(0, builderItems.reduce((sum, item) => sum + item.price, 0) - (builderItems.length >= 4 ? 3 : 0));
 
-  const builderProduct = useMemo<Product>(() => ({
-    id: `custom-${[...builder].sort().join("-")}`,
-    name: "My Custom Bundle",
-    price: builderPrice,
-    category: "Custom",
-    description: `${builderItems.length} pieces, wrapped together in our signature paper.`,
-    contents: builderItems.map((item) => item.name).join(" · "),
-    visual: "custom",
-  }), [builder, builderItems, builderPrice]);
-
   const addToCart = (product: Product) => {
+    if (!product.available) return;
     setCart((current) => {
       const existing = current.find((item) => item.id === product.id);
       return existing
@@ -154,7 +169,7 @@ export default function Home() {
           <a href="#pieces">Prefer to choose each piece? <span>→</span></a>
         </div>
         <div className="product-grid bundle-grid">
-          {bundles.map((product) => <ProductCard key={product.id} product={product} onAdd={addToCart} />)}
+          {catalogueLoading ? <CatalogueMessage>Loading the collection…</CatalogueMessage> : catalogueError ? <CatalogueMessage>{catalogueError}</CatalogueMessage> : bundles.map((product) => <ProductCard key={product.id} product={product} onAdd={addToCart} />)}
         </div>
       </section>
 
@@ -183,7 +198,7 @@ export default function Home() {
           </div>
           <div className="builder-total">
             <span><small>Custom bundle total</small><strong>{money(builderPrice)}</strong></span>
-            <button className="button blush" disabled onClick={() => addToCart(builderProduct)}>Coming soon</button>
+            <button className="button blush" disabled>Coming soon</button>
           </div>
           <p className="builder-hint">Custom bundle ordering will be enabled in a future update.</p>
         </div>
@@ -195,7 +210,7 @@ export default function Home() {
           <p>Build a set slowly, replace a favourite, or choose one small something.</p>
         </div>
         <div className="product-grid pieces-grid">
-          {individualItems.map((product) => <ProductCard key={product.id} product={product} onAdd={addToCart} compact />)}
+          {catalogueLoading ? <CatalogueMessage>Loading the paper cupboard…</CatalogueMessage> : catalogueError ? <CatalogueMessage>{catalogueError}</CatalogueMessage> : individualItems.map((product) => <ProductCard key={product.id} product={product} onAdd={addToCart} compact />)}
         </div>
       </section>
 
@@ -249,7 +264,11 @@ export default function Home() {
 
 function ProductCard({ product, onAdd, compact = false }: { product: Product; onAdd: (product: Product) => void; compact?: boolean }) {
   return <article className={compact ? "product-card compact" : "product-card"}>
-    <div className={`product-art ${product.visual}`} aria-hidden="true"><span className="object-one" /><span className="object-two" /><span className="object-three" />{product.badge && <small>{product.badge}</small>}</div>
-    <div className="product-info"><div><span>{product.category}</span><h3>{product.name}</h3></div><strong>{money(product.price)}</strong><p>{product.description}</p>{product.contents && <small className="contents">{product.contents}</small>}<button onClick={() => onAdd(product)}>Add to bag <span>＋</span></button></div>
+    <div className={`product-art ${product.visual}`} aria-hidden="true"><span className="object-one" /><span className="object-two" /><span className="object-three" />{product.available ? product.badge && <small>{product.badge}</small> : <small className="sold-out-badge">Sold out</small>}</div>
+    <div className="product-info"><div><span>{product.category}</span><h3>{product.name}</h3></div><strong>{money(product.price)}</strong><p>{product.description}</p>{product.contents && <small className="contents">{product.contents}</small>}<button onClick={() => onAdd(product)} disabled={!product.available}>{product.available ? <>Add to bag <span>＋</span></> : "Currently unavailable"}</button></div>
   </article>;
+}
+
+function CatalogueMessage({ children }: { children: React.ReactNode }) {
+  return <p className="catalogue-message" role="status">{children}</p>;
 }

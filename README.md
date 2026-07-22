@@ -7,19 +7,15 @@ ChatGPT sign-in and an approved-email check.
 
 ## Current release
 
-Phase 3 includes:
+Phase 5 includes everything from Phases 1–3, plus:
 
-- responsive stationery storefront
-- shopping bag and collection-order request flow
-- database-backed order capture with server-verified products and pricing
-- private `/admin` owner area
-- server-side owner email verification
-- private owner order inbox with customer, collection and line-item details
-- owner order search and status filters
-- fulfilment status updates with timestamps and durable history
-- private preparation notes for the owner
-- dashboard counts for each order status
-- secure sign-out and search-engine blocking for admin pages
+- database-backed storefront catalogue
+- protected product creation and editing
+- owner-managed names, descriptions, prices, badges and visual styles
+- live and sold-out availability controls
+- safe product archive and restore workflow
+- checkout pricing and availability verified from the live catalogue
+- historical order snapshots preserved when products change
 
 The live site is currently kept private while the ordering system is developed.
 
@@ -59,7 +55,7 @@ npm run build
 - `app/page.tsx` — storefront, bag and collection checkout
 - `app/admin/` — protected owner administration pages
 - `app/chatgpt-auth.ts` — ChatGPT sign-in helpers
-- `db/` and `drizzle/` — order schema and database migrations
+- `db/` and `drizzle/` — order, catalogue and migration schemas
 - `.openai/hosting.json` — Sites project configuration
 
 ## Business contact
@@ -69,5 +65,6 @@ For Mint Scribbles enquiries and order requests, use
 
 ## Roadmap
 
-- Later phases: product management, stock availability, custom bundles,
-  notifications and optional online payments
+- Phase 4 is intentionally deferred: customer tracking and notifications
+- Phase 6: custom bundle builder and bundle pricing rules
+- Phase 7: optional online payments and launch preparation

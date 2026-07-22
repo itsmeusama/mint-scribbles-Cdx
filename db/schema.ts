@@ -29,8 +29,30 @@ export const orderItems = sqliteTable("order_items", {
   unitPricePence: integer("unit_price_pence").notNull(),
   quantity: integer("quantity").notNull(),
   lineTotalPence: integer("line_total_pence").notNull(),
+  productVisual: text("product_visual").notNull().default("notebook"),
 }, (table) => [
   index("order_items_order_id_idx").on(table.orderId),
+]);
+
+export const products = sqliteTable("products", {
+  id: text("id").primaryKey(),
+  name: text("name").notNull(),
+  pricePence: integer("price_pence").notNull(),
+  category: text("category").notNull(),
+  description: text("description").notNull(),
+  contents: text("contents").notNull().default(""),
+  visual: text("visual").notNull(),
+  badge: text("badge").notNull().default(""),
+  available: integer("available", { mode: "boolean" }).notNull().default(true),
+  archived: integer("archived", { mode: "boolean" }).notNull().default(false),
+  sortOrder: integer("sort_order").notNull().default(0),
+  createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+  updatedAt: text("updated_at").notNull().default(""),
+}, (table) => [
+  index("products_category_idx").on(table.category),
+  index("products_available_idx").on(table.available),
+  index("products_archived_idx").on(table.archived),
+  index("products_sort_order_idx").on(table.sortOrder),
 ]);
 
 export const orderStatusHistory = sqliteTable("order_status_history", {

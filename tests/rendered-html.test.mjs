@@ -16,8 +16,9 @@ test("checkout sends product identifiers to the server-authoritative order API",
 
   assert.match(page, /fetch\("\/api\/orders"/);
   assert.match(page, /productId: item\.id/);
-  assert.match(route, /findProduct\(productId\)/);
-  assert.match(route, /Math\.round\(product\.price \* 100\)/);
+  assert.match(route, /FROM products/);
+  assert.match(route, /price_pence/);
+  assert.match(route, /archived = 0 AND available = 1/);
   assert.doesNotMatch(page, /window\.location/);
 });
 
@@ -37,8 +38,29 @@ test("the private admin inbox loads recent order and line-item records", async (
   assert.match(adminOrders, /\.from\(ordersTable\)/);
   assert.match(adminOrders, /\.from\(orderItems\)/);
   assert.match(adminOrders, /\.limit\(100\)/);
-  assert.match(adminOrders, /findProduct\(item\.productId\)/);
+  assert.match(adminOrders, /item\.productVisual/);
   assert.match(adminOrders, /admin-order-product-thumb/);
+});
+
+test("Phase 5 uses one protected database-backed catalogue", async () => {
+  const [storefront, catalogRoute, createRoute, updateRoute, manager, migration] = await Promise.all([
+    source("app/page.tsx"),
+    source("app/api/catalog/route.ts"),
+    source("app/api/admin/products/route.ts"),
+    source("app/api/admin/products/[id]/route.ts"),
+    source("app/admin/products/ProductManager.tsx"),
+    source("drizzle/0002_tranquil_alex_wilder.sql"),
+  ]);
+
+  assert.match(storefront, /fetch\("\/api\/catalog"/);
+  assert.match(catalogRoute, /\.from\(products\)/);
+  assert.match(createRoute, /getMintAdminApiAccess\(\)/);
+  assert.match(updateRoute, /UPDATE products/);
+  assert.match(manager, /Archive product/);
+  assert.match(manager, /Available to order/);
+  assert.match(migration, /CREATE TABLE `products`/);
+  assert.match(migration, /'desk-reset', 'The Desk Reset'/);
+  assert.match(migration, /ADD `product_visual`/);
 });
 
 test("Phase 3 order management is owner-protected and durable", async () => {

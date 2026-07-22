@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { count } from "drizzle-orm";
 import { getDb } from "../../db";
-import { orders } from "../../db/schema";
+import { orders, products } from "../../db/schema";
 import { getMintAdminAccess } from "../admin-access";
 
 export const dynamic = "force-dynamic";
@@ -21,10 +21,22 @@ async function loadOrderMetrics() {
   return metrics;
 }
 
+async function loadProductMetrics() {
+  const rows = await getDb().select({ available: products.available, archived: products.archived }).from(products);
+  return {
+    live: rows.filter((product) => !product.archived).length,
+    soldOut: rows.filter((product) => !product.archived && !product.available).length,
+    archived: rows.filter((product) => product.archived).length,
+  };
+}
+
 export default async function AdminOverviewPage() {
   const { isOwner } = await getMintAdminAccess("/admin");
   if (!isOwner) return null;
-  const metrics = await loadOrderMetrics().catch(() => emptyMetrics);
+  const [metrics, productMetrics] = await Promise.all([
+    loadOrderMetrics().catch(() => emptyMetrics),
+    loadProductMetrics().catch(() => ({ live: 0, soldOut: 0, archived: 0 })),
+  ]);
 
   return (
     <main className="admin-content">
@@ -34,7 +46,7 @@ export default async function AdminOverviewPage() {
           <h1>Welcome to Mint Scribbles Admin.</h1>
           <p>Track every customer request from arrival through collection.</p>
         </div>
-        <span className="admin-status-pill">Phase 3 active</span>
+        <span className="admin-status-pill">Phase 5 active</span>
       </div>
 
       <section className="admin-metrics-grid" aria-label="Order status summary">
@@ -59,24 +71,24 @@ export default async function AdminOverviewPage() {
         <article className="admin-summary-card">
           <div className="admin-card-topline">
             <span className="admin-card-number">02</span>
-            <span className="admin-coming-label">Future phase</span>
+            <span className="admin-coming-label active">Manage</span>
           </div>
           <h2>Products</h2>
-          <p>The product catalogue will later be managed here without changing website code or republishing the shop.</p>
-          <Link href="/admin/products">Open products</Link>
+          <p>{productMetrics.live} live products · {productMetrics.soldOut} sold out · {productMetrics.archived} archived. Changes appear in the storefront automatically.</p>
+          <Link href="/admin/products">Manage products</Link>
         </article>
       </section>
 
       <section className="admin-foundation-card">
         <div>
-          <p className="admin-kicker">Phase 3 workflow</p>
+          <p className="admin-kicker">Phase 5 catalogue</p>
           <h2>What is active now</h2>
         </div>
         <ul>
-          <li><span>✓</span> Search and status filters</li>
-          <li><span>✓</span> Fulfilment status updates</li>
-          <li><span>✓</span> Private owner notes</li>
-          <li><span>✓</span> Status timestamps and history</li>
+          <li><span>✓</span> Database-backed storefront catalogue</li>
+          <li><span>✓</span> Add and edit product details</li>
+          <li><span>✓</span> Sold-out availability controls</li>
+          <li><span>✓</span> Safe archive and restore workflow</li>
         </ul>
       </section>
     </main>
