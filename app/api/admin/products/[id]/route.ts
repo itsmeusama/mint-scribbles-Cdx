@@ -23,7 +23,7 @@ export async function PATCH(
       WHERE id = ?
     `).bind(
       product.name,
-      product.pricePence,
+      product.priceLkr,
       product.category,
       product.description,
       product.contents,

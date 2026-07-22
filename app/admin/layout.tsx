@@ -77,8 +77,8 @@ export default async function AdminLayout({
 
         <div className="admin-phase-note">
           <small>Current release</small>
-          <strong>Phase 5.1</strong>
-          <p>Owner-managed products, prices and availability.</p>
+          <strong>Phase 4</strong>
+          <p>Customer order tracking and visible status updates.</p>
         </div>
 
         <div className="admin-account">

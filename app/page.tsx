@@ -3,10 +3,9 @@
 
 import { FormEvent, useEffect, useState } from "react";
 import type { Product } from "../lib/catalog";
+import { formatLkr } from "../lib/money";
 
 type CartItem = Product & { quantity: number };
-
-const money = (value: number) => `£${value.toFixed(2)}`;
 
 export default function Home() {
   const [catalogue, setCatalogue] = useState<Product[]>([]);
@@ -47,7 +46,7 @@ export default function Home() {
   const itemCount = cart.reduce((sum, item) => sum + item.quantity, 0);
   const subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const builderItems = individualItems.filter((item) => builder.includes(item.id));
-  const builderPrice = Math.max(0, builderItems.reduce((sum, item) => sum + item.price, 0) - (builderItems.length >= 4 ? 3 : 0));
+  const builderPrice = Math.max(0, builderItems.reduce((sum, item) => sum + item.price, 0) - (builderItems.length >= 4 ? 300 : 0));
 
   const addToCart = (product: Product) => {
     if (!product.available) return;
@@ -117,7 +116,7 @@ export default function Home() {
 
   return (
     <main>
-      <div className="announcement">Complimentary collection from our London studio · Bank deposit & pay at collection available</div>
+      <div className="announcement">Complimentary local collection in Sri Lanka · Bank deposit & pay at collection available</div>
 
       <header className="site-header">
         <button className="menu-button" onClick={() => setMenuOpen(!menuOpen)} aria-expanded={menuOpen} aria-controls="main-nav">Menu</button>
@@ -129,6 +128,7 @@ export default function Home() {
           <a href="#bundles" onClick={() => setMenuOpen(false)}>Shop bundles</a>
           <a href="#pieces" onClick={() => setMenuOpen(false)}>Individual pieces</a>
           <span className="nav-coming" aria-disabled="true">Custom bundles <small>Coming soon</small></span>
+          <a href="/track-order">Track order</a>
           <a href="#story" onClick={() => setMenuOpen(false)}>Our story</a>
         </nav>
         <button className="bag-button" onClick={() => setCartOpen(true)} aria-label={`Open bag with ${itemCount} items`}>
@@ -193,12 +193,12 @@ export default function Home() {
               <label key={item.id} className={builder.includes(item.id) ? "builder-option selected locked" : "builder-option locked"} aria-disabled="true">
                 <input type="checkbox" checked={builder.includes(item.id)} onChange={() => toggleBuilderItem(item.id)} disabled />
                 {item.imageUrl ? <img className="mini-product-photo" src={item.imageUrl} alt="" /> : <span className={`mini-visual ${item.visual}`} aria-hidden="true" />}
-                <span><strong>{item.name}</strong><small>{money(item.price)}</small></span>
+                <span><strong>{item.name}</strong><small>{formatLkr(item.price)}</small></span>
               </label>
             ))}
           </div>
           <div className="builder-total">
-            <span><small>Custom bundle total</small><strong>{money(builderPrice)}</strong></span>
+            <span><small>Custom bundle total</small><strong>{formatLkr(builderPrice)}</strong></span>
             <button className="button blush" disabled>Coming soon</button>
           </div>
           <p className="builder-hint">Custom bundle ordering will be enabled in a future update.</p>
@@ -223,13 +223,13 @@ export default function Home() {
       <section className="collection-section">
         <p className="eyebrow light">Simple ways to pay</p>
         <h2>Reserve today. Pay the way that suits you.</h2>
-        <div className="payment-cards"><article><span>01</span><h3>Pay at collection</h3><p>Collect from our London studio and pay when your parcel is in your hands.</p></article><article><span>02</span><h3>Bank deposit</h3><p>Choose bank deposit at checkout. We will reply with account details and hold your order for 48 hours.</p></article><article><span>03</span><h3>Friendly confirmation</h3><p>We confirm the collection window and any gift-note details personally by email.</p></article></div>
+        <div className="payment-cards"><article><span>01</span><h3>Pay at collection</h3><p>Collect locally in Sri Lanka and pay when your parcel is in your hands.</p></article><article><span>02</span><h3>Bank deposit</h3><p>Choose bank deposit at checkout. We will reply with account details and hold your order for 48 hours.</p></article><article><span>03</span><h3>Track your order</h3><p>Use your order reference and email to follow every update through collection.</p></article></div>
       </section>
 
       <footer>
         <div className="footer-brand"><span>Mint Scribbles</span><small>Stationery for slower, lovelier moments.</small></div>
-        <div><strong>Visit</strong><a href="#bundles">Curated bundles</a><a href="#pieces">Individual pieces</a><span className="footer-disabled">Custom bundles · Coming soon</span></div>
-        <div><strong>Collection</strong><p>Tuesday–Saturday<br />10:00–17:00<br />London studio</p></div>
+        <div><strong>Visit</strong><a href="#bundles">Curated bundles</a><a href="#pieces">Individual pieces</a><a href="/track-order">Track an order</a><span className="footer-disabled">Custom bundles · Coming soon</span></div>
+        <div><strong>Collection</strong><p>Tuesday–Saturday<br />10:00–17:00<br />Sri Lanka</p></div>
         <div><strong>Keep in touch</strong><a href="mailto:mohamedusama881@gmail.com">mohamedusama881@gmail.com</a></div>
         <p className="copyright">© 2026 Mint Scribbles · Made carefully, collected locally.</p>
       </footer>
@@ -240,8 +240,8 @@ export default function Home() {
       <aside className={cartOpen ? "cart-drawer open" : "cart-drawer"} aria-hidden={!cartOpen} aria-label="Shopping bag">
         <div className="drawer-heading"><div><p className="eyebrow">Your selection</p><h2>Shopping bag</h2></div><button className="close-button" onClick={() => setCartOpen(false)} aria-label="Close bag">×</button></div>
         {cart.length === 0 ? <div className="empty-bag"><span>◇</span><h3>Your bag is waiting</h3><p>Begin with a ready-made edit or build a bundle of your own.</p><button className="button primary" onClick={() => setCartOpen(false)}>Continue shopping</button></div> : <>
-          <div className="cart-items">{cart.map((item) => <article className="cart-item" key={item.id}><div className={`cart-thumb product-art ${item.visual}`} aria-hidden="true">{item.imageUrl ? <img className="product-photo" src={item.imageUrl} alt="" /> : <><span className="object-one" /><span className="object-two" /></>}</div><div><span className="cart-category">{item.category}</span><h3>{item.name}</h3><p>{money(item.price)}</p><div className="quantity"><button onClick={() => updateQuantity(item.id, item.quantity - 1)} aria-label={`Remove one ${item.name}`}>−</button><span>{item.quantity}</span><button onClick={() => updateQuantity(item.id, item.quantity + 1)} aria-label={`Add one ${item.name}`}>+</button></div></div><strong>{money(item.price * item.quantity)}</strong></article>)}</div>
-          <div className="cart-summary"><div><span>Subtotal</span><strong>{money(subtotal)}</strong></div><p>Collection is complimentary. No payment is taken online.</p><button className="button primary full" onClick={openCheckout}>Continue to checkout</button><button className="text-button" onClick={() => setCartOpen(false)}>Continue shopping</button></div>
+          <div className="cart-items">{cart.map((item) => <article className="cart-item" key={item.id}><div className={`cart-thumb product-art ${item.visual}`} aria-hidden="true">{item.imageUrl ? <img className="product-photo" src={item.imageUrl} alt="" /> : <><span className="object-one" /><span className="object-two" /></>}</div><div><span className="cart-category">{item.category}</span><h3>{item.name}</h3><p>{formatLkr(item.price)}</p><div className="quantity"><button onClick={() => updateQuantity(item.id, item.quantity - 1)} aria-label={`Remove one ${item.name}`}>−</button><span>{item.quantity}</span><button onClick={() => updateQuantity(item.id, item.quantity + 1)} aria-label={`Add one ${item.name}`}>+</button></div></div><strong>{formatLkr(item.price * item.quantity)}</strong></article>)}</div>
+          <div className="cart-summary"><div><span>Subtotal</span><strong>{formatLkr(subtotal)}</strong></div><p>Collection is complimentary. No payment is taken online.</p><button className="button primary full" onClick={openCheckout}>Continue to checkout</button><button className="text-button" onClick={() => setCartOpen(false)}>Continue shopping</button></div>
         </>}
       </aside>
 
@@ -249,13 +249,13 @@ export default function Home() {
         <button className="modal-backdrop" onClick={() => setCheckoutOpen(false)} aria-label="Close checkout" />
         <div className="checkout-card">
           <button className="close-button" onClick={() => setCheckoutOpen(false)} aria-label="Close checkout">×</button>
-          {orderPlaced ? <div className="order-confirmation"><span>✓</span><p className="eyebrow">Order request received</p><h2>Thank you — your order is saved.</h2><p>We will confirm availability, collection and payment details personally by email.</p><div className="order-reference"><small>Your order reference</small><strong>{orderReference}</strong></div><button className="button primary" onClick={() => { setCheckoutOpen(false); setCart([]); }}>Done</button></div> : <form onSubmit={submitOrder}>
+          {orderPlaced ? <div className="order-confirmation"><span>✓</span><p className="eyebrow">Order request received</p><h2>Thank you — your order is saved.</h2><p>Keep your reference safe. You can use it with your order email to follow every status update.</p><div className="order-reference"><small>Your order reference</small><strong>{orderReference}</strong></div><a className="button primary" href="/track-order">Track your order</a><button className="text-button" onClick={() => { setCheckoutOpen(false); setCart([]); }}>Done</button></div> : <form onSubmit={submitOrder}>
             <div className="checkout-heading"><p className="eyebrow">Reserve your order</p><h2 id="checkout-title">Collection checkout</h2><p>No payment is taken on this page.</p></div>
             <div className="checkout-layout"><div className="checkout-fields">
               <fieldset><legend>1. Your details</legend><label>Full name<input name="name" autoComplete="name" required /></label><div className="field-row"><label>Email<input type="email" name="email" autoComplete="email" required /></label><label>Phone<input type="tel" name="phone" autoComplete="tel" required /></label></div></fieldset>
               <fieldset><legend>2. Collection</legend><label>Preferred collection day<select name="collection" required defaultValue=""><option value="" disabled>Choose a day</option><option>Tuesday</option><option>Wednesday</option><option>Thursday</option><option>Friday</option><option>Saturday</option></select></label><label>Gift note or order notes<textarea name="notes" rows={3} placeholder="Optional" /></label></fieldset>
               <fieldset><legend>3. Payment choice</legend><label className="payment-option"><input type="radio" name="payment" value="collection" defaultChecked /><span><strong>Pay at collection</strong><small>Pay when you collect your parcel.</small></span></label><label className="payment-option"><input type="radio" name="payment" value="deposit" /><span><strong>Bank deposit</strong><small>Account details are sent after we receive your request.</small></span></label></fieldset>
-            </div><aside className="order-summary"><h3>Your order</h3>{cart.map((item) => <div className="order-summary-item" key={item.id}>{item.imageUrl ? <img src={item.imageUrl} alt="" /> : <span className={`mini-visual ${item.visual}`} aria-hidden="true" />}<span>{item.quantity} × {item.name}</span><strong>{money(item.price * item.quantity)}</strong></div>)}<div className="order-summary-total"><span>Total</span><strong>{money(subtotal)}</strong></div><small>By placing this request, you agree that availability and collection time will be confirmed by email.</small>{orderError && <p className="checkout-error" role="alert">{orderError}</p>}<button className="button primary full" type="submit" disabled={submittingOrder}>{submittingOrder ? "Saving your order…" : "Place order request"}</button></aside></div>
+            </div><aside className="order-summary"><h3>Your order</h3>{cart.map((item) => <div className="order-summary-item" key={item.id}>{item.imageUrl ? <img src={item.imageUrl} alt="" /> : <span className={`mini-visual ${item.visual}`} aria-hidden="true" />}<span>{item.quantity} × {item.name}</span><strong>{formatLkr(item.price * item.quantity)}</strong></div>)}<div className="order-summary-total"><span>Total</span><strong>{formatLkr(subtotal)}</strong></div><small>By placing this request, you agree that availability and collection time will be confirmed through the order tracker and by direct contact.</small>{orderError && <p className="checkout-error" role="alert">{orderError}</p>}<button className="button primary full" type="submit" disabled={submittingOrder}>{submittingOrder ? "Saving your order…" : "Place order request"}</button></aside></div>
           </form>}
         </div>
       </div>}
@@ -266,7 +266,7 @@ export default function Home() {
 function ProductCard({ product, onAdd, compact = false }: { product: Product; onAdd: (product: Product) => void; compact?: boolean }) {
   return <article className={compact ? "product-card compact" : "product-card"}>
     <div className={`product-art ${product.visual}`}>{product.imageUrl ? <img className="product-photo" src={product.imageUrl} alt={product.imageAlt || product.name} loading="lazy" /> : <><span className="object-one" aria-hidden="true" /><span className="object-two" aria-hidden="true" /><span className="object-three" aria-hidden="true" /></>}{product.available ? product.badge && <small>{product.badge}</small> : <small className="sold-out-badge">Sold out</small>}</div>
-    <div className="product-info"><div><span>{product.category}</span><h3>{product.name}</h3></div><strong>{money(product.price)}</strong><p>{product.description}</p>{product.contents && <small className="contents">{product.contents}</small>}<button onClick={() => onAdd(product)} disabled={!product.available}>{product.available ? <>Add to bag <span>＋</span></> : "Currently unavailable"}</button></div>
+    <div className="product-info"><div><span>{product.category}</span><h3>{product.name}</h3></div><strong>{formatLkr(product.price)}</strong><p>{product.description}</p>{product.contents && <small className="contents">{product.contents}</small>}<button onClick={() => onAdd(product)} disabled={!product.available}>{product.available ? <>Add to bag <span>＋</span></> : "Currently unavailable"}</button></div>
   </article>;
 }
 

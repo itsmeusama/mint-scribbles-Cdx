@@ -12,7 +12,7 @@ async function loadProducts() {
   return rows.map((product): Product & { archived: boolean; sortOrder: number } => ({
     id: product.id,
     name: product.name,
-    price: product.pricePence / 100,
+    price: product.priceLkr,
     category: isProductCategory(product.category) ? product.category : "Individual",
     description: product.description,
     contents: product.contents,
@@ -39,7 +39,7 @@ export default async function AdminProductsPage() {
           <h1>Manage the catalogue</h1>
           <p>Add products, update prices and details, control availability, or archive items safely.</p>
         </div>
-        <span className="admin-status-pill">Phase 5.1</span>
+        <span className="admin-status-pill">Phase 4 active</span>
       </div>
 
       {products ? <ProductManager products={products} /> : (

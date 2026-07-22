@@ -5,6 +5,7 @@ import { getDb } from "../../../db";
 import { orderItems, orders as ordersTable } from "../../../db/schema";
 import { isOrderStatus, ORDER_STATUSES, ORDER_STATUS_LABELS, type OrderStatus } from "../../../lib/orders";
 import { productImageUrl } from "../../../lib/catalog";
+import { formatLkr } from "../../../lib/money";
 import { getMintAdminAccess } from "../../admin-access";
 import OrderActions from "./OrderActions";
 
@@ -14,8 +15,6 @@ type PageProps = {
   searchParams: Promise<{ q?: string | string[]; status?: string | string[] }>;
 };
 
-const money = (pence: number) => `£${(pence / 100).toFixed(2)}`;
-
 function queryValue(value: string | string[] | undefined) {
   return (Array.isArray(value) ? value[0] : value ?? "").trim().slice(0, 100);
 }
@@ -23,10 +22,10 @@ function queryValue(value: string | string[] | undefined) {
 function formatDateTime(value: string) {
   const parsed = new Date(`${value.replace(" ", "T")}Z`);
   if (Number.isNaN(parsed.getTime())) return value;
-  return new Intl.DateTimeFormat("en-GB", {
+  return new Intl.DateTimeFormat("en-LK", {
     dateStyle: "medium",
     timeStyle: "short",
-    timeZone: "Europe/London",
+    timeZone: "Asia/Colombo",
   }).format(parsed);
 }
 
@@ -148,7 +147,7 @@ export default async function AdminOrdersPage({ searchParams }: PageProps) {
                   <div><small>Customer</small><strong>{order.customerName}</strong><a href={`mailto:${order.email}`}>{order.email}</a><a href={`tel:${order.phone}`}>{order.phone}</a></div>
                   <div><small>Collection</small><strong>{order.collectionDay}</strong><span>{order.paymentMethod === "deposit" ? "Bank deposit" : "Pay at collection"}</span></div>
                   <div><small>Received</small><strong>{formatDateTime(order.createdAt)}</strong><span>Updated {formatDateTime(order.updatedAt)}</span></div>
-                  <div><small>Total</small><strong>{money(order.subtotalPence)}</strong><span>{(itemsByOrder.get(order.id) ?? []).reduce((sum, item) => sum + item.quantity, 0)} items</span></div>
+                  <div><small>Total</small><strong>{formatLkr(order.subtotalLkr)}</strong><span>{(itemsByOrder.get(order.id) ?? []).reduce((sum, item) => sum + item.quantity, 0)} items</span></div>
                 </div>
 
                 <div className="admin-order-items">
@@ -166,9 +165,9 @@ export default async function AdminOrdersPage({ searchParams }: PageProps) {
                         </div>
                         <div className="admin-order-item-copy">
                           <strong>{item.quantity} × {item.productName}</strong>
-                          <span>Product · {money(item.unitPricePence)} each</span>
+                          <span>Product · {formatLkr(item.unitPriceLkr)} each</span>
                         </div>
-                        <strong className="admin-order-line-total">{money(item.lineTotalPence)}</strong>
+                        <strong className="admin-order-line-total">{formatLkr(item.lineTotalLkr)}</strong>
                       </div>
                     );
                   })}

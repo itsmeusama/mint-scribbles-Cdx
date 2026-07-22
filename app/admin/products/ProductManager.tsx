@@ -10,13 +10,14 @@ import {
   type ProductCategory,
   type ProductVisual,
 } from "../../../lib/catalog";
+import { formatLkr } from "../../../lib/money";
 
 type ManagedProduct = Product & { archived: boolean; sortOrder: number };
 
 const emptyProduct: ManagedProduct = {
   id: "",
   name: "",
-  price: 10,
+  price: 1000,
   category: "Individual",
   description: "",
   contents: "",
@@ -66,7 +67,7 @@ export default function ProductManager({ products }: { products: ManagedProduct[
 function ProductEditor({ product, isNew = false, onSaved }: { product: ManagedProduct; isNew?: boolean; onSaved?: () => void }) {
   const router = useRouter();
   const [name, setName] = useState(product.name);
-  const [price, setPrice] = useState(product.price.toFixed(2));
+  const [price, setPrice] = useState(product.price.toFixed(0));
   const [category, setCategory] = useState<ProductCategory>(product.category);
   const [description, setDescription] = useState(product.description);
   const [contents, setContents] = useState(product.contents ?? "");
@@ -109,7 +110,7 @@ function ProductEditor({ product, isNew = false, onSaved }: { product: ManagedPr
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
           name,
-          pricePence: Math.round(Number(price) * 100),
+          priceLkr: Math.round(Number(price)),
           category,
           description,
           contents,
@@ -273,7 +274,7 @@ function ProductEditor({ product, isNew = false, onSaved }: { product: ManagedPr
         </section>
       <div className="admin-product-form-grid">
         <label><span>Product name</span><input value={name} maxLength={120} onChange={(event) => setName(event.target.value)} required /></label>
-        <label><span>Price (£)</span><input type="number" min="0.50" max="10000" step="0.01" value={price} onChange={(event) => setPrice(event.target.value)} required /></label>
+        <label><span>Price (LKR)</span><input type="number" min="50" max="10000000" step="1" value={price} onChange={(event) => setPrice(event.target.value)} required /></label>
         <label><span>Category</span><select value={category} onChange={(event) => setCategory(event.target.value as ProductCategory)}>{PRODUCT_CATEGORIES.map((option) => <option key={option}>{option}</option>)}</select></label>
         <label><span>Visual style</span><select value={visual} onChange={(event) => setVisual(event.target.value as ProductVisual)}>{PRODUCT_VISUALS.map((option) => <option key={option} value={option}>{option.replaceAll("-", " ")}</option>)}</select></label>
         <label className="admin-product-wide"><span>Description</span><textarea rows={3} maxLength={500} value={description} onChange={(event) => setDescription(event.target.value)} required /></label>
@@ -295,7 +296,7 @@ function ProductEditor({ product, isNew = false, onSaved }: { product: ManagedPr
     <details className={archived ? "admin-product-card archived" : "admin-product-card"}>
       <summary>
         <div className="admin-product-thumb" aria-hidden="true">{imageUrl ? <img src={imageUrl} alt="" /> : <div className={`product-art ${visual}`}><span className="object-one" /><span className="object-two" /><span className="object-three" /></div>}</div>
-        <div><small>{category}</small><strong>{name}</strong><span>£{Number(price).toFixed(2)}</span></div>
+        <div><small>{category}</small><strong>{name}</strong><span>{formatLkr(Number(price))}</span></div>
         <span className={archived ? "admin-product-state archived" : available ? "admin-product-state live" : "admin-product-state sold-out"}>{archived ? "Archived" : available ? "Live" : "Sold out"}</span>
         <span className="admin-product-edit-label">Edit</span>
       </summary>

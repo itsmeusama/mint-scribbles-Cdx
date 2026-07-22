@@ -2,7 +2,7 @@ import { isProductCategory, isProductVisual, type ProductCategory, type ProductV
 
 export type ProductInput = {
   name: string;
-  pricePence: number;
+  priceLkr: number;
   category: ProductCategory;
   description: string;
   contents: string;
@@ -23,11 +23,11 @@ export function parseProductInput(payload: Record<string, unknown>):
   const description = text(payload.description, 500);
   const contents = text(payload.contents, 500);
   const badge = text(payload.badge, 40);
-  const pricePence = payload.pricePence;
+  const priceLkr = payload.priceLkr;
 
   if (name.length < 2) return { error: "Enter a product name." };
-  if (!Number.isInteger(pricePence) || (pricePence as number) < 50 || (pricePence as number) > 1000000) {
-    return { error: "Enter a valid product price." };
+  if (!Number.isInteger(priceLkr) || (priceLkr as number) < 50 || (priceLkr as number) > 10000000) {
+    return { error: "Enter a valid product price in LKR." };
   }
   if (!isProductCategory(payload.category)) return { error: "Choose a product category." };
   if (description.length < 5) return { error: "Enter a short product description." };
@@ -36,7 +36,7 @@ export function parseProductInput(payload: Record<string, unknown>):
   return {
     value: {
       name,
-      pricePence: pricePence as number,
+      priceLkr: priceLkr as number,
       category: payload.category,
       description,
       contents,

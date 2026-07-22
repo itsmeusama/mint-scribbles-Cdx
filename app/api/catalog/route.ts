@@ -15,7 +15,7 @@ export async function GET() {
       products: rows.map((product) => ({
         id: product.id,
         name: product.name,
-        price: product.pricePence / 100,
+        price: product.priceLkr,
         category: isProductCategory(product.category) ? product.category : "Individual",
         description: product.description,
         contents: product.contents || undefined,

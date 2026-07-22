@@ -24,7 +24,7 @@ export async function POST(request: Request) {
     `).bind(
       id,
       product.name,
-      product.pricePence,
+      product.priceLkr,
       product.category,
       product.description,
       product.contents,

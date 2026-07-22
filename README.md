@@ -1,13 +1,23 @@
 # Mint Scribbles
 
-Mint Scribbles is a curated stationery storefront for ready-made bundles and
-individual paper goods. Customers can prepare a collection order without an
-online payment, while the owner has a private administration area protected by
-ChatGPT sign-in and an approved-email check.
+Mint Scribbles is a Sri Lankan curated stationery storefront for ready-made
+bundles and individual paper goods. Customers can prepare a local collection
+order without an online payment, while the owner has a private administration
+area protected by ChatGPT sign-in and an approved-email check.
 
 ## Current release
 
-Phase 5.1 includes everything from Phases 1–3 and Phase 5, plus:
+Phase 4 includes everything from Phases 1–3, Phase 5 and Phase 5.1, plus:
+
+- Sri Lankan Rupee (LKR) pricing throughout the storefront, checkout and admin
+- Sri Lanka collection language and Asia/Colombo order timestamps
+- a public order-tracking page protected by order reference and matching email
+- current order status, collection and payment summary for customers
+- customer-safe product summaries and historical order photographs
+- a customer-visible status timeline from request through collection
+- direct order-tracking links in the storefront and checkout confirmation
+
+Phase 5.1 previously added:
 
 - database-backed storefront catalogue
 - protected product creation and editing
@@ -85,6 +95,6 @@ For Mint Scribbles enquiries and order requests, use
 
 ## Roadmap
 
-- Phase 4 is intentionally deferred: customer tracking and notifications
+- Transactional customer and owner email delivery requires a separately configured email provider
 - Phase 6: custom bundle builder and bundle pricing rules
 - Phase 7: optional online payments and launch preparation

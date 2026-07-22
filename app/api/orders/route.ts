@@ -14,7 +14,7 @@ type RequestedItem = { productId?: unknown; quantity?: unknown };
 type CatalogueProduct = {
   id: string;
   name: string;
-  price_pence: number;
+  price_lkr: number;
   visual: string;
   image_key: string;
   image_alt: string;
@@ -80,7 +80,7 @@ export async function POST(request: Request) {
     const productIds = Array.from(quantities.keys());
     const placeholders = productIds.map(() => "?").join(", ");
     const catalogue = await d1.prepare(`
-      SELECT id, name, price_pence, visual, image_key, image_alt
+      SELECT id, name, price_pence AS price_lkr, visual, image_key, image_alt
       FROM products
       WHERE id IN (${placeholders}) AND archived = 0 AND available = 1
     `).bind(...productIds).all<CatalogueProduct>();
@@ -89,16 +89,16 @@ export async function POST(request: Request) {
     const items = Array.from(quantities, ([productId, quantity]) => {
       const product = productsById.get(productId);
       if (!product) return null;
-      const unitPricePence = product.price_pence;
+      const unitPriceLkr = product.price_lkr;
       return {
         productId,
         productName: product.name,
         productVisual: product.visual,
         productImageKey: product.image_key,
         productImageAlt: product.image_alt,
-        unitPricePence,
+        unitPriceLkr,
         quantity,
-        lineTotalPence: unitPricePence * quantity,
+        lineTotalLkr: unitPriceLkr * quantity,
       };
     });
 
@@ -107,7 +107,7 @@ export async function POST(request: Request) {
     }
 
     const validItems = items.filter((item): item is NonNullable<typeof item> => item !== null);
-    const subtotalPence = validItems.reduce((sum, item) => sum + item.lineTotalPence, 0);
+    const subtotalLkr = validItems.reduce((sum, item) => sum + item.lineTotalLkr, 0);
     const id = crypto.randomUUID();
     const reference = createOrderReference();
 
@@ -117,7 +117,7 @@ export async function POST(request: Request) {
           id, reference, customer_name, email, phone, collection_day,
           payment_method, notes, subtotal_pence, status, updated_at, status_updated_at
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'new', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
-      `).bind(id, reference, customerName, email, phone, collectionDay, paymentMethod, notes, subtotalPence),
+      `).bind(id, reference, customerName, email, phone, collectionDay, paymentMethod, notes, subtotalLkr),
       d1.prepare(`
         INSERT INTO order_status_history (order_id, status, changed_by)
         VALUES (?, 'new', 'customer checkout')
@@ -131,9 +131,9 @@ export async function POST(request: Request) {
         id,
         item.productId,
         item.productName,
-        item.unitPricePence,
+        item.unitPriceLkr,
         item.quantity,
-        item.lineTotalPence,
+        item.lineTotalLkr,
         item.productVisual,
         item.productImageKey,
         item.productImageAlt,

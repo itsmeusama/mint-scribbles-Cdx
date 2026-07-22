@@ -124,3 +124,25 @@ test("Phase 3 order management is owner-protected and durable", async () => {
   assert.match(migration, /ALTER TABLE `orders` ADD `admin_notes`/);
   assert.match(migration, /Phase 3 migration/);
 });
+
+test("Phase 4 provides private customer tracking and LKR pricing", async () => {
+  const [storefront, trackingPage, trackingRoute, orders, money, adminOrders] = await Promise.all([
+    source("app/page.tsx"),
+    source("app/track-order/TrackOrder.tsx"),
+    source("app/api/orders/track/route.ts"),
+    source("lib/orders.ts"),
+    source("lib/money.ts"),
+    source("app/admin/orders/page.tsx"),
+  ]);
+
+  assert.match(storefront, /Sri Lanka/);
+  assert.match(storefront, /href="\/track-order"/);
+  assert.match(trackingPage, /fetch\("\/api\/orders\/track"/);
+  assert.match(trackingPage, /Order timeline/);
+  assert.match(trackingRoute, /WHERE reference = \? AND lower\(email\) = \?/);
+  assert.match(trackingRoute, /ORDER_STATUS_CUSTOMER_MESSAGES/);
+  assert.doesNotMatch(trackingRoute, /admin_notes/);
+  assert.match(orders, /ready: "Your order is ready for collection/);
+  assert.match(money, /currency: "LKR"/);
+  assert.match(adminOrders, /timeZone: "Asia\/Colombo"/);
+});
