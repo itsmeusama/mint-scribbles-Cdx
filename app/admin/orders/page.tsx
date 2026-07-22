@@ -1,6 +1,7 @@
 import { desc, inArray } from "drizzle-orm";
 import { getDb } from "../../../db";
 import { orderItems, orders as ordersTable } from "../../../db/schema";
+import { findProduct } from "../../../lib/catalog";
 import { getMintAdminAccess } from "../../admin-access";
 
 export const dynamic = "force-dynamic";
@@ -101,12 +102,25 @@ export default async function AdminOrdersPage() {
               </div>
 
               <div className="admin-order-items">
-                {(itemsByOrder.get(order.id) ?? []).map((item) => (
-                  <p key={item.id}>
-                    <span>{item.quantity} × {item.productName}</span>
-                    <strong>{money(item.lineTotalPence)}</strong>
-                  </p>
-                ))}
+                {(itemsByOrder.get(order.id) ?? []).map((item) => {
+                  const product = findProduct(item.productId);
+                  return (
+                    <div className="admin-order-item" key={item.id}>
+                      <div className="admin-order-product-thumb" aria-hidden="true">
+                        <div className={`product-art ${product?.visual ?? "unknown"}`}>
+                          <span className="object-one" />
+                          <span className="object-two" />
+                          <span className="object-three" />
+                        </div>
+                      </div>
+                      <div className="admin-order-item-copy">
+                        <strong>{item.quantity} × {item.productName}</strong>
+                        <span>{product?.category ?? "Product"} · {money(item.unitPricePence)} each</span>
+                      </div>
+                      <strong className="admin-order-line-total">{money(item.lineTotalPence)}</strong>
+                    </div>
+                  );
+                })}
               </div>
 
               {order.notes && <div className="admin-order-notes"><small>Customer notes</small><p>{order.notes}</p></div>}

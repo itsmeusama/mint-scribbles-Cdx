@@ -37,4 +37,6 @@ test("the private admin inbox loads recent order and line-item records", async (
   assert.match(adminOrders, /\.from\(ordersTable\)/);
   assert.match(adminOrders, /\.from\(orderItems\)/);
   assert.match(adminOrders, /\.limit\(50\)/);
+  assert.match(adminOrders, /findProduct\(item\.productId\)/);
+  assert.match(adminOrders, /admin-order-product-thumb/);
 });

@@ -554,18 +554,62 @@
   padding: 20px 32px;
 }
 
-.admin-order-items p {
-  display: flex;
-  justify-content: space-between;
-  gap: 20px;
-  margin: 0;
-  padding: 10px 0;
+.admin-order-item {
+  display: grid;
+  grid-template-columns: 104px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 18px;
+  padding: 14px 0;
   border-bottom: 1px solid var(--admin-line);
-  font-size: 12px;
 }
 
-.admin-order-items p:last-child {
+.admin-order-item:last-child {
   border-bottom: 0;
+}
+
+.admin-order-product-thumb {
+  width: 104px;
+  height: 78px;
+  overflow: hidden;
+  border: 1px solid var(--admin-line);
+  background: var(--admin-ivory);
+}
+
+.admin-order-product-thumb .product-art {
+  width: 320px;
+  height: 240px;
+  transform: scale(0.325);
+  transform-origin: top left;
+}
+
+.admin-order-product-thumb .product-art.unknown {
+  background: var(--admin-sage);
+}
+
+.admin-order-item-copy {
+  min-width: 0;
+}
+
+.admin-order-item-copy strong,
+.admin-order-item-copy span {
+  display: block;
+}
+
+.admin-order-item-copy strong {
+  color: var(--admin-forest);
+  font: 17px/1.25 Georgia, serif;
+}
+
+.admin-order-item-copy span {
+  margin-top: 7px;
+  color: var(--admin-muted);
+  font-size: 10px;
+}
+
+.admin-order-line-total {
+  color: var(--admin-forest);
+  font: 16px Georgia, serif;
+  white-space: nowrap;
 }
 
 .admin-order-notes {
@@ -691,6 +735,24 @@
   .admin-order-notes {
     margin-right: 20px;
     margin-left: 20px;
+  }
+
+  .admin-order-item {
+    grid-template-columns: 82px minmax(0, 1fr);
+    gap: 13px;
+  }
+
+  .admin-order-product-thumb {
+    width: 82px;
+    height: 68px;
+  }
+
+  .admin-order-product-thumb .product-art {
+    transform: scale(0.285);
+  }
+
+  .admin-order-line-total {
+    grid-column: 2;
   }
 }
 
