@@ -7,7 +7,7 @@ ChatGPT sign-in and an approved-email check.
 
 ## Current release
 
-Phase 2 includes:
+Phase 3 includes:
 
 - responsive stationery storefront
 - shopping bag and collection-order request flow
@@ -15,6 +15,10 @@ Phase 2 includes:
 - private `/admin` owner area
 - server-side owner email verification
 - private owner order inbox with customer, collection and line-item details
+- owner order search and status filters
+- fulfilment status updates with timestamps and durable history
+- private preparation notes for the owner
+- dashboard counts for each order status
 - secure sign-out and search-engine blocking for admin pages
 
 The live site is currently kept private while the ordering system is developed.
@@ -65,6 +69,5 @@ For Mint Scribbles enquiries and order requests, use
 
 ## Roadmap
 
-- Phase 3: owner order management and status updates
 - Later phases: product management, stock availability, custom bundles,
   notifications and optional online payments

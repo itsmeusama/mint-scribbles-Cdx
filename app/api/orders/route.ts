@@ -96,9 +96,13 @@ export async function POST(request: Request) {
       d1.prepare(`
         INSERT INTO orders (
           id, reference, customer_name, email, phone, collection_day,
-          payment_method, notes, subtotal_pence, status
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'new')
+          payment_method, notes, subtotal_pence, status, updated_at, status_updated_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'new', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
       `).bind(id, reference, customerName, email, phone, collectionDay, paymentMethod, notes, subtotalPence),
+      d1.prepare(`
+        INSERT INTO order_status_history (order_id, status, changed_by)
+        VALUES (?, 'new', 'customer checkout')
+      `).bind(id),
       ...validItems.map((item) => d1.prepare(`
         INSERT INTO order_items (
           order_id, product_id, product_name, unit_price_pence, quantity, line_total_pence

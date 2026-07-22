@@ -36,7 +36,23 @@ test("the private admin inbox loads recent order and line-item records", async (
   assert.match(adminOrders, /getMintAdminAccess\("\/admin\/orders"\)/);
   assert.match(adminOrders, /\.from\(ordersTable\)/);
   assert.match(adminOrders, /\.from\(orderItems\)/);
-  assert.match(adminOrders, /\.limit\(50\)/);
+  assert.match(adminOrders, /\.limit\(100\)/);
   assert.match(adminOrders, /findProduct\(item\.productId\)/);
   assert.match(adminOrders, /admin-order-product-thumb/);
+});
+
+test("Phase 3 order management is owner-protected and durable", async () => {
+  const [actions, route, migration] = await Promise.all([
+    source("app/admin/orders/OrderActions.tsx"),
+    source("app/api/admin/orders/[id]/route.ts"),
+    source("drizzle/0001_safe_gertrude_yorkes.sql"),
+  ]);
+
+  assert.match(actions, /method: "PATCH"/);
+  assert.match(actions, /Private admin notes/);
+  assert.match(route, /getMintAdminApiAccess\(\)/);
+  assert.match(route, /INSERT INTO order_status_history/);
+  assert.match(migration, /CREATE TABLE `order_status_history`/);
+  assert.match(migration, /ALTER TABLE `orders` ADD `admin_notes`/);
+  assert.match(migration, /Phase 3 migration/);
 });
