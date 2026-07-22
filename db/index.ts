@@ -17,3 +17,14 @@ export function getD1() {
 
   return env.DB;
 }
+
+export function getProductImagesBucket() {
+  const bucket = (env as typeof env & { PRODUCT_IMAGES?: R2Bucket }).PRODUCT_IMAGES;
+  if (!bucket) {
+    throw new Error(
+      "Cloudflare R2 binding `PRODUCT_IMAGES` is unavailable. Set the `r2` field in .openai/hosting.json to `PRODUCT_IMAGES`."
+    );
+  }
+
+  return bucket;
+}

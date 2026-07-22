@@ -1,7 +1,7 @@
 import { asc, eq } from "drizzle-orm";
 import { getDb } from "../../../db";
 import { products } from "../../../db/schema";
-import { isProductCategory, isProductVisual } from "../../../lib/catalog";
+import { isProductCategory, isProductVisual, productImageUrl } from "../../../lib/catalog";
 
 export async function GET() {
   try {
@@ -21,6 +21,8 @@ export async function GET() {
         contents: product.contents || undefined,
         visual: isProductVisual(product.visual) ? product.visual : "notebook",
         badge: product.badge || undefined,
+        imageUrl: productImageUrl(product.imageKey),
+        imageAlt: product.imageAlt || undefined,
         available: product.available,
         sortOrder: product.sortOrder,
       })),

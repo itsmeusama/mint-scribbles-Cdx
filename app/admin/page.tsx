@@ -46,7 +46,7 @@ export default async function AdminOverviewPage() {
           <h1>Welcome to Mint Scribbles Admin.</h1>
           <p>Track every customer request from arrival through collection.</p>
         </div>
-        <span className="admin-status-pill">Phase 5 active</span>
+        <span className="admin-status-pill">Phase 5.1 active</span>
       </div>
 
       <section className="admin-metrics-grid" aria-label="Order status summary">
@@ -81,7 +81,7 @@ export default async function AdminOverviewPage() {
 
       <section className="admin-foundation-card">
         <div>
-          <p className="admin-kicker">Phase 5 catalogue</p>
+          <p className="admin-kicker">Phase 5.1 catalogue</p>
           <h2>What is active now</h2>
         </div>
         <ul>

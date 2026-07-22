@@ -63,6 +63,47 @@ test("Phase 5 uses one protected database-backed catalogue", async () => {
   assert.match(migration, /ADD `product_visual`/);
 });
 
+test("Phase 5.1 stores validated photographs in R2 and preserves order image references", async () => {
+  const [
+    hosting,
+    uploadRoute,
+    imageRoute,
+    catalogRoute,
+    checkoutRoute,
+    manager,
+    storefront,
+    adminOrders,
+    migration,
+  ] = await Promise.all([
+    source(".openai/hosting.json"),
+    source("app/api/admin/products/[id]/image/route.ts"),
+    source("app/api/product-images/[key]/route.ts"),
+    source("app/api/catalog/route.ts"),
+    source("app/api/orders/route.ts"),
+    source("app/admin/products/ProductManager.tsx"),
+    source("app/page.tsx"),
+    source("app/admin/orders/page.tsx"),
+    source("drizzle/0003_typical_santa_claus.sql"),
+  ]);
+
+  assert.match(hosting, /"r2": "PRODUCT_IMAGES"/);
+  assert.match(uploadRoute, /getMintAdminApiAccess\(\)/);
+  assert.match(uploadRoute, /5 \* 1024 \* 1024/);
+  assert.match(uploadRoute, /image\/jpeg/);
+  assert.match(uploadRoute, /image\/png/);
+  assert.match(uploadRoute, /image\/webp/);
+  assert.match(uploadRoute, /bucket\.put/);
+  assert.match(imageRoute, /max-age=31536000, immutable/);
+  assert.match(catalogRoute, /productImageUrl\(product\.imageKey\)/);
+  assert.match(checkoutRoute, /product_image_key/);
+  assert.match(manager, /Upload photograph/);
+  assert.match(manager, /Remove photograph/);
+  assert.match(storefront, /product\.imageUrl/);
+  assert.match(adminOrders, /item\.productImageKey/);
+  assert.match(migration, /ADD `product_image_key`/);
+  assert.match(migration, /ADD `image_key`/);
+});
+
 test("Phase 3 order management is owner-protected and durable", async () => {
   const [actions, route, migration] = await Promise.all([
     source("app/admin/orders/OrderActions.tsx"),

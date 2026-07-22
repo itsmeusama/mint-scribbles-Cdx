@@ -1,7 +1,7 @@
 import { asc } from "drizzle-orm";
 import { getDb } from "../../../db";
 import { products as productsTable } from "../../../db/schema";
-import { isProductCategory, isProductVisual, type Product } from "../../../lib/catalog";
+import { isProductCategory, isProductVisual, productImageUrl, type Product } from "../../../lib/catalog";
 import { getMintAdminAccess } from "../../admin-access";
 import ProductManager from "./ProductManager";
 
@@ -18,6 +18,8 @@ async function loadProducts() {
     contents: product.contents,
     visual: isProductVisual(product.visual) ? product.visual : "notebook",
     badge: product.badge,
+    imageUrl: productImageUrl(product.imageKey),
+    imageAlt: product.imageAlt,
     available: product.available,
     archived: product.archived,
     sortOrder: product.sortOrder,
@@ -37,7 +39,7 @@ export default async function AdminProductsPage() {
           <h1>Manage the catalogue</h1>
           <p>Add products, update prices and details, control availability, or archive items safely.</p>
         </div>
-        <span className="admin-status-pill">Phase 5</span>
+        <span className="admin-status-pill">Phase 5.1</span>
       </div>
 
       {products ? <ProductManager products={products} /> : (

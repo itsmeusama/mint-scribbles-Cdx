@@ -30,6 +30,8 @@ export const orderItems = sqliteTable("order_items", {
   quantity: integer("quantity").notNull(),
   lineTotalPence: integer("line_total_pence").notNull(),
   productVisual: text("product_visual").notNull().default("notebook"),
+  productImageKey: text("product_image_key").notNull().default(""),
+  productImageAlt: text("product_image_alt").notNull().default(""),
 }, (table) => [
   index("order_items_order_id_idx").on(table.orderId),
 ]);
@@ -43,6 +45,9 @@ export const products = sqliteTable("products", {
   contents: text("contents").notNull().default(""),
   visual: text("visual").notNull(),
   badge: text("badge").notNull().default(""),
+  imageKey: text("image_key").notNull().default(""),
+  imageAlt: text("image_alt").notNull().default(""),
+  imageMimeType: text("image_mime_type").notNull().default(""),
   available: integer("available", { mode: "boolean" }).notNull().default(true),
   archived: integer("archived", { mode: "boolean" }).notNull().default(false),
   sortOrder: integer("sort_order").notNull().default(0),

@@ -1,8 +1,10 @@
+/* eslint-disable @next/next/no-img-element -- R2 images are served by the app's immutable image endpoint. */
 import Link from "next/link";
 import { and, desc, eq, inArray, like, or, type SQL } from "drizzle-orm";
 import { getDb } from "../../../db";
 import { orderItems, orders as ordersTable } from "../../../db/schema";
 import { isOrderStatus, ORDER_STATUSES, ORDER_STATUS_LABELS, type OrderStatus } from "../../../lib/orders";
+import { productImageUrl } from "../../../lib/catalog";
 import { getMintAdminAccess } from "../../admin-access";
 import OrderActions from "./OrderActions";
 
@@ -154,9 +156,13 @@ export default async function AdminOrdersPage({ searchParams }: PageProps) {
                     return (
                       <div className="admin-order-item" key={item.id}>
                         <div className="admin-order-product-thumb" aria-hidden="true">
-                          <div className={`product-art ${item.productVisual || "unknown"}`}>
-                            <span className="object-one" /><span className="object-two" /><span className="object-three" />
-                          </div>
+                          {item.productImageKey ? (
+                            <img src={productImageUrl(item.productImageKey)} alt="" />
+                          ) : (
+                            <div className={`product-art ${item.productVisual || "unknown"}`}>
+                              <span className="object-one" /><span className="object-two" /><span className="object-three" />
+                            </div>
+                          )}
                         </div>
                         <div className="admin-order-item-copy">
                           <strong>{item.quantity} × {item.productName}</strong>

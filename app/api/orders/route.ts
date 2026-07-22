@@ -16,6 +16,8 @@ type CatalogueProduct = {
   name: string;
   price_pence: number;
   visual: string;
+  image_key: string;
+  image_alt: string;
 };
 
 const COLLECTION_DAYS = new Set(["Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]);
@@ -78,7 +80,7 @@ export async function POST(request: Request) {
     const productIds = Array.from(quantities.keys());
     const placeholders = productIds.map(() => "?").join(", ");
     const catalogue = await d1.prepare(`
-      SELECT id, name, price_pence, visual
+      SELECT id, name, price_pence, visual, image_key, image_alt
       FROM products
       WHERE id IN (${placeholders}) AND archived = 0 AND available = 1
     `).bind(...productIds).all<CatalogueProduct>();
@@ -92,6 +94,8 @@ export async function POST(request: Request) {
         productId,
         productName: product.name,
         productVisual: product.visual,
+        productImageKey: product.image_key,
+        productImageAlt: product.image_alt,
         unitPricePence,
         quantity,
         lineTotalPence: unitPricePence * quantity,
@@ -121,9 +125,19 @@ export async function POST(request: Request) {
       ...validItems.map((item) => d1.prepare(`
         INSERT INTO order_items (
           order_id, product_id, product_name, unit_price_pence, quantity,
-          line_total_pence, product_visual
-        ) VALUES (?, ?, ?, ?, ?, ?, ?)
-      `).bind(id, item.productId, item.productName, item.unitPricePence, item.quantity, item.lineTotalPence, item.productVisual)),
+          line_total_pence, product_visual, product_image_key, product_image_alt
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `).bind(
+        id,
+        item.productId,
+        item.productName,
+        item.unitPricePence,
+        item.quantity,
+        item.lineTotalPence,
+        item.productVisual,
+        item.productImageKey,
+        item.productImageAlt,
+      )),
     ]);
 
     return Response.json({ reference }, { status: 201 });

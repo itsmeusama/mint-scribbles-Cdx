@@ -23,6 +23,8 @@ export type Product = {
   contents?: string;
   visual: ProductVisual;
   badge?: string;
+  imageUrl?: string;
+  imageAlt?: string;
   available: boolean;
   archived?: boolean;
   sortOrder?: number;
@@ -30,6 +32,10 @@ export type Product = {
 
 export function isProductCategory(value: unknown): value is ProductCategory {
   return typeof value === "string" && PRODUCT_CATEGORIES.includes(value as ProductCategory);
+}
+
+export function productImageUrl(imageKey: string) {
+  return imageKey ? `/api/product-images/${encodeURIComponent(imageKey)}` : undefined;
 }
 
 export function isProductVisual(value: unknown): value is ProductVisual {
