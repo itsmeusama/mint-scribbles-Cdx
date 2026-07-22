@@ -9,18 +9,18 @@ export async function generateMetadata(): Promise<Metadata> {
   const socialImage = `${protocol}://${host}/og.png`;
 
   return {
-    title: "Mints Scribles | Curated Stationery Bundles",
+    title: "Mint Scribbles | Curated Stationery Bundles",
     description: "Shop thoughtful ready-made stationery edits and individual paper goods. Reserve online and pay by bank deposit or at collection.",
     icons: { icon: "/favicon.svg", shortcut: "/favicon.svg" },
     openGraph: {
-      title: "Mints Scribles | Thoughtful stationery, bundled beautifully.",
+      title: "Mint Scribbles | Thoughtful stationery, bundled beautifully.",
       description: "Curated stationery bundles and individual pieces ready for collection.",
       type: "website",
-      images: [{ url: socialImage, width: 1200, height: 630, alt: "Mints Scribles stationery collection" }],
+      images: [{ url: socialImage, width: 1200, height: 630, alt: "Mint Scribbles stationery collection" }],
     },
     twitter: {
       card: "summary_large_image",
-      title: "Mints Scribles",
+      title: "Mint Scribbles",
       description: "Thoughtful stationery, bundled beautifully.",
       images: [socialImage],
     },

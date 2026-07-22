@@ -1,98 +1,70 @@
-# vinext-starter
+# Mint Scribbles
 
-A clean full-stack starter running on
-[vinext](https://github.com/cloudflare/vinext), with optional Cloudflare D1 and
-Drizzle support.
+Mint Scribbles is a curated stationery storefront for ready-made bundles and
+individual paper goods. Customers can prepare a collection order without an
+online payment, while the owner has a private administration area protected by
+ChatGPT sign-in and an approved-email check.
 
-## Prerequisites
+## Current release
 
-- Node.js `>=22.13.0`
+Phase 1 includes:
 
-## Quick Start
+- responsive stationery storefront
+- shopping bag and collection-order request flow
+- private `/admin` owner area
+- server-side owner email verification
+- admin foundations for future order and product management
+- secure sign-out and search-engine blocking for admin pages
+
+The live site is currently kept private while the ordering system is developed.
+
+## Technology
+
+- Next.js and React
+- Vinext and Vite
+- Cloudflare Workers-compatible deployment through OpenAI Sites
+- Drizzle ORM, ready for the Phase 2 order database
+
+## Local development
+
+Node.js 22.13 or newer is required.
 
 ```bash
 npm install
 npm run dev
+```
+
+Create a local `.env` file using `.env.example` and set the approved owner
+email:
+
+```bash
+MINT_ADMIN_EMAIL=mohamedusama881@gmail.com
+```
+
+Do not commit `.env` files or credentials.
+
+## Validation
+
+```bash
 npm run build
 ```
 
-This starter does not use `wrangler.jsonc`.
+## Project structure
 
-## Included Shape
+- `app/page.tsx` — storefront, bag and collection checkout
+- `app/admin/` — protected owner administration pages
+- `app/chatgpt-auth.ts` — ChatGPT sign-in helpers
+- `db/` and `drizzle/` — database foundation for later phases
+- `.openai/hosting.json` — Sites project configuration
 
-- edit site code under `app/`
-- `.openai/hosting.json` declares optional Sites D1 and R2 bindings
-- `vite.config.ts` simulates declared bindings for local development
-- `db/schema.ts` starts intentionally empty
-- `examples/d1/` contains an optional D1 example surface
-- `drizzle.config.ts` supports local migration generation when needed
+## Business contact
 
-## Workspace Auth Headers
+For Mint Scribbles enquiries and order requests, use
+`mohamedusama881@gmail.com`.
 
-OpenAI workspace sites can read the current user's email from
-`oai-authenticated-user-email`.
+## Roadmap
 
-SIWC-authenticated workspace sites may also receive
-`oai-authenticated-user-full-name` when the user's SIWC profile has a non-empty
-`name` claim. The full-name value is percent-encoded UTF-8 and is accompanied by
-`oai-authenticated-user-full-name-encoding: percent-encoded-utf-8`.
-
-Treat the full name as optional and fall back to email when it is absent:
-
-```tsx
-import { headers } from "next/headers";
-
-export default async function Home() {
-  const requestHeaders = await headers();
-  const email = requestHeaders.get("oai-authenticated-user-email");
-  const encodedFullName = requestHeaders.get("oai-authenticated-user-full-name");
-  const fullName =
-    encodedFullName &&
-    requestHeaders.get("oai-authenticated-user-full-name-encoding") ===
-      "percent-encoded-utf-8"
-      ? decodeURIComponent(encodedFullName)
-      : null;
-
-  const displayName = fullName ?? email;
-  // ...
-}
-```
-
-## Optional Dispatch-Owned ChatGPT Sign-In
-
-Import the ready-to-use helpers from `app/chatgpt-auth.ts` when the site needs
-optional or required ChatGPT sign-in:
-
-- Use `getChatGPTUser()` for optional signed-in UI.
-- Use `requireChatGPTUser(returnTo)` for server-rendered pages that should send
-  anonymous visitors through Sign in with ChatGPT.
-- Use `chatGPTSignInPath(returnTo)` and `chatGPTSignOutPath(returnTo)` for
-  browser links or actions.
-- Pass a same-origin relative `returnTo` path for the destination after sign-in
-  or sign-out. The helper validates and safely encodes it.
-- Mark protected pages with `export const dynamic = "force-dynamic"` because
-  they depend on per-request identity headers.
-
-Dispatch owns `/signin-with-chatgpt`, `/signout-with-chatgpt`, `/callback`, the
-OAuth cookies, and identity header injection. Do not implement app routes for
-those reserved paths. Routes that do not import and call the helper remain
-anonymous-compatible.
-
-SIWC establishes identity only; it does not prove workspace membership. Use the
-Sites hosting platform's access policy controls for workspace-wide restrictions,
-or enforce explicit server-side membership or allowlist checks.
-
-Use SIWC for account pages, user-specific dashboards, saved records, and write
-actions tied to the current ChatGPT user. Leave public content anonymous.
-
-## Useful Commands
-
-- `npm run dev`: start local development
-- `npm run build`: verify the vinext build output
-- `npm test`: build the starter and verify its rendered loading skeleton
-- `npm run db:generate`: generate Drizzle migrations after schema changes
-
-## Learn More
-
-- [vinext Documentation](https://github.com/cloudflare/vinext)
-- [Drizzle D1 Guide](https://orm.drizzle.team/docs/get-started/d1-new)
+- Phase 2: database-backed customer order capture
+- Phase 3: owner order management and status updates
+- Later phases: product management, stock availability, custom bundles,
+  notifications and optional online payments

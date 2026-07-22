@@ -9,8 +9,8 @@ import "./admin.css";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Mints Scribles Admin",
-  description: "Private owner administration for Mints Scribles.",
+  title: "Mint Scribbles Admin",
+  description: "Private owner administration for Mint Scribbles.",
   robots: { index: false, follow: false },
 };
 
@@ -18,14 +18,14 @@ export default async function AdminLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   const user = await requireChatGPTUser("/admin");
-  const ownerEmail = process.env.MINTS_ADMIN_EMAIL?.trim().toLowerCase();
+  const ownerEmail = process.env.MINT_ADMIN_EMAIL?.trim().toLowerCase();
   const isOwner = ownerEmail && user.email.trim().toLowerCase() === ownerEmail;
 
   if (!ownerEmail) {
     return (
       <main className="admin-gate">
         <div className="admin-gate-card">
-          <p className="admin-kicker">Mints Scribles Admin</p>
+          <p className="admin-kicker">Mint Scribbles Admin</p>
           <h1>Owner access is not configured.</h1>
           <p>
             The approved owner email is missing from the secure site settings.
@@ -45,7 +45,7 @@ export default async function AdminLayout({
           <h1>This account is not authorised.</h1>
           <p>
             You are signed in as <strong>{user.email}</strong>. Only the approved
-            Mints Scribles owner account can access this area.
+            Mint Scribbles owner account can access this area.
           </p>
           <a className="admin-primary-action" href={chatGPTSignOutPath("/admin")}>
             Sign out and use the owner account
@@ -60,7 +60,7 @@ export default async function AdminLayout({
     <div className="admin-app">
       <aside className="admin-sidebar">
         <Link className="admin-brand" href="/admin">
-          <span>Mints Scribles</span>
+          <span>Mint Scribbles</span>
           <small>Owner admin</small>
         </Link>
 
@@ -100,7 +100,7 @@ export default async function AdminLayout({
       <div className="admin-main">
         <header className="admin-topbar">
           <div>
-            <span className="admin-mobile-brand">Mints Scribles Admin</span>
+            <span className="admin-mobile-brand">Mint Scribbles Admin</span>
             <small>Private owner area</small>
           </div>
           <Link href="/">View shop ↗</Link>

@@ -6,7 +6,7 @@ export default function AdminOverviewPage() {
       <div className="admin-page-heading">
         <div>
           <p className="admin-kicker">Owner dashboard</p>
-          <h1>Welcome to Mints Scribles Admin.</h1>
+          <h1>Welcome to Mint Scribbles Admin.</h1>
           <p>
             This private area will grow one small phase at a time. Secure owner
             access is now in place.

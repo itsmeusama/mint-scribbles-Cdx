@@ -115,10 +115,10 @@ export default function Home() {
     const data = new FormData(event.currentTarget);
     const payment = data.get("payment") === "deposit" ? "Bank deposit" : "Pay at collection";
     const orderLines = cart.map((item) => `${item.quantity} × ${item.name} — ${money(item.price * item.quantity)}`).join("\n");
-    const subject = encodeURIComponent(`New Mints Scribles order request — ${data.get("name")}`);
+    const subject = encodeURIComponent(`New Mint Scribbles order request — ${data.get("name")}`);
     const body = encodeURIComponent(`Customer: ${data.get("name")}\nEmail: ${data.get("email")}\nPhone: ${data.get("phone")}\nCollection day: ${data.get("collection")}\nPayment: ${payment}\n\n${orderLines}\n\nTotal: ${money(subtotal)}\n\nNotes: ${data.get("notes") || "None"}`);
     setOrderPlaced(true);
-    window.location.href = `mailto:orders@mintsscribles.co.uk?subject=${subject}&body=${body}`;
+    window.location.href = `mailto:mohamedusama881@gmail.com?subject=${subject}&body=${body}`;
   };
 
   return (
@@ -127,8 +127,8 @@ export default function Home() {
 
       <header className="site-header">
         <button className="menu-button" onClick={() => setMenuOpen(!menuOpen)} aria-expanded={menuOpen} aria-controls="main-nav">Menu</button>
-        <a className="brand" href="#top" aria-label="Mints Scribles home">
-          <span>Mints Scribles</span>
+        <a className="brand" href="#top" aria-label="Mint Scribbles home">
+          <span>Mint Scribbles</span>
           <small>Stationery studio</small>
         </a>
         <nav id="main-nav" className={menuOpen ? "nav open" : "nav"} aria-label="Main navigation">
@@ -222,8 +222,8 @@ export default function Home() {
       </section>
 
       <section className="story-section" id="story">
-        <div className="story-note"><span>A note from our table</span><p>“We choose stationery the way we choose books: for how it feels in the hand, how well it lasts, and the small ritual it creates.”</p><small>— The Mints Scribles studio</small></div>
-        <div className="story-copy"><p className="eyebrow">Small-batch, thoughtfully gathered</p><h2>Nothing added just to fill the box.</h2><p>Every Paper &amp; Parcel edit is built around useful pieces from independent paper makers. We favour recycled stocks, low-plastic packaging and timeless details that will be used, not tucked away.</p><div className="story-stats"><span><strong>12</strong><small>Independent makers</small></span><span><strong>100%</strong><small>Plastic-free wrapping</small></span><span><strong>2–3 days</strong><small>Collection ready</small></span></div></div>
+        <div className="story-note"><span>A note from our table</span><p>“We choose stationery the way we choose books: for how it feels in the hand, how well it lasts, and the small ritual it creates.”</p><small>— The Mint Scribbles studio</small></div>
+        <div className="story-copy"><p className="eyebrow">Small-batch, thoughtfully gathered</p><h2>Nothing added just to fill the box.</h2><p>Every Mint Scribbles edit is built around useful pieces from independent paper makers. We favour recycled stocks, low-plastic packaging and timeless details that will be used, not tucked away.</p><div className="story-stats"><span><strong>12</strong><small>Independent makers</small></span><span><strong>100%</strong><small>Plastic-free wrapping</small></span><span><strong>2–3 days</strong><small>Collection ready</small></span></div></div>
       </section>
 
       <section className="collection-section">
@@ -233,11 +233,11 @@ export default function Home() {
       </section>
 
       <footer>
-        <div className="footer-brand"><span>Mints Scribles</span><small>Stationery for slower, lovelier moments.</small></div>
+        <div className="footer-brand"><span>Mint Scribbles</span><small>Stationery for slower, lovelier moments.</small></div>
         <div><strong>Visit</strong><a href="#bundles">Curated bundles</a><a href="#pieces">Individual pieces</a><span className="footer-disabled">Custom bundles · Coming soon</span></div>
         <div><strong>Collection</strong><p>Tuesday–Saturday<br />10:00–17:00<br />London studio</p></div>
-        <div><strong>Keep in touch</strong><a href="mailto:hello@mintsscribles.co.uk">hello@mintsscribles.co.uk</a><p>@mintsscribles</p></div>
-        <p className="copyright">© 2026 Mints Scribles · Made carefully, collected locally.</p>
+        <div><strong>Keep in touch</strong><a href="mailto:mohamedusama881@gmail.com">mohamedusama881@gmail.com</a></div>
+        <p className="copyright">© 2026 Mint Scribbles · Made carefully, collected locally.</p>
       </footer>
 
       {toast && <div className="toast" role="status">{toast}<button onClick={() => setCartOpen(true)}>View bag</button></div>}
