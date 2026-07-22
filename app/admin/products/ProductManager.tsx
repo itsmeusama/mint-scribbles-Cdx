@@ -81,6 +81,7 @@ function ProductEditor({ product, isNew = false, onSaved }: { product: ManagedPr
   const [uploadingImage, setUploadingImage] = useState(false);
   const [imageMessage, setImageMessage] = useState("");
   const [imageError, setImageError] = useState(false);
+  const [createdProductId, setCreatedProductId] = useState("");
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
   const [isError, setIsError] = useState(false);
@@ -90,14 +91,21 @@ function ProductEditor({ product, isNew = false, onSaved }: { product: ManagedPr
     if (saving) return;
     const nextArchived = archivedOverride ?? archived;
     if (archivedOverride === true && !window.confirm(`Archive ${name}? It will disappear from the shop but remain on past orders.`)) return;
+    if (isNew && imageFile && imageAlt.trim().length < 2) {
+      setImageError(true);
+      setImageMessage("Add a short description of the photograph.");
+      return;
+    }
 
     setSaving(true);
     setMessage("");
     setIsError(false);
 
     try {
-      const response = await fetch(isNew ? "/api/admin/products" : `/api/admin/products/${encodeURIComponent(product.id)}`, {
-        method: isNew ? "POST" : "PATCH",
+      const creatingProduct = isNew && !createdProductId;
+      const productId = createdProductId || product.id;
+      const response = await fetch(creatingProduct ? "/api/admin/products" : `/api/admin/products/${encodeURIComponent(productId)}`, {
+        method: creatingProduct ? "POST" : "PATCH",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
           name,
@@ -111,11 +119,31 @@ function ProductEditor({ product, isNew = false, onSaved }: { product: ManagedPr
           archived: nextArchived,
         }),
       });
-      const result = await response.json() as { error?: string };
+      const result = await response.json() as { id?: string; error?: string };
       if (!response.ok) throw new Error(result.error || "The product could not be saved.");
 
+      const savedProductId = creatingProduct ? result.id : productId;
+      if (!savedProductId) throw new Error("The new product was saved without a usable reference.");
+
+      if (isNew && imageFile) {
+        try {
+          await uploadSelectedImage(savedProductId);
+        } catch (error) {
+          setCreatedProductId(savedProductId);
+          setIsError(true);
+          setMessage(`Product saved, but its photograph was not uploaded. ${error instanceof Error ? error.message : "Choose Retry photograph upload."}`);
+          router.refresh();
+          return;
+        }
+      }
+
       setArchived(nextArchived);
-      setMessage(isNew ? "Product added." : nextArchived ? "Product archived." : "Product saved.");
+      setMessage(isNew ? imageFile ? "Product and photograph added." : "Product added." : nextArchived ? "Product archived." : "Product saved.");
+      if (isNew && imagePreview) URL.revokeObjectURL(imagePreview);
+      if (isNew) {
+        setImageFile(null);
+        setImagePreview("");
+      }
       router.refresh();
       onSaved?.();
     } catch (error) {
@@ -124,6 +152,16 @@ function ProductEditor({ product, isNew = false, onSaved }: { product: ManagedPr
     } finally {
       setSaving(false);
     }
+  }
+
+  async function uploadSelectedImage(productId: string) {
+    if (!imageFile) return;
+    const body = new FormData();
+    body.set("image", imageFile);
+    body.set("alt", imageAlt);
+    const response = await fetch(`/api/admin/products/${encodeURIComponent(productId)}/image`, { method: "POST", body });
+    const result = await response.json() as { imageUrl?: string; imageAlt?: string; error?: string };
+    if (!response.ok || !result.imageUrl) throw new Error(result.error || "The photograph could not be uploaded. Choose Retry photograph upload.");
   }
 
   function chooseImage(event: ChangeEvent<HTMLInputElement>) {
@@ -214,25 +252,25 @@ function ProductEditor({ product, isNew = false, onSaved }: { product: ManagedPr
 
   const form = (
     <form className="admin-product-form" onSubmit={saveProduct}>
-      {isNew ? (
-        <div className="admin-product-image-note"><strong>Product photograph</strong><span>Save the product first, then reopen it to upload its real image.</span></div>
-      ) : (
-        <section className="admin-product-image-editor" aria-label="Product photograph">
+      <section className="admin-product-image-editor" aria-label="Product photograph">
           <div className="admin-product-image-preview">
             {imagePreview || imageUrl ? <img src={imagePreview || imageUrl} alt={imageAlt || "Selected product photograph"} /> : <div className={`product-art ${visual}`} aria-hidden="true"><span className="object-one" /><span className="object-two" /><span className="object-three" /></div>}
           </div>
           <div className="admin-product-image-controls">
             <div><strong>Product photograph</strong><span>JPG, PNG or WebP · maximum 5MB · one image per product</span></div>
-            <label><span>Choose image</span><input type="file" accept="image/jpeg,image/png,image/webp" onChange={chooseImage} disabled={uploadingImage} /></label>
+            <label><span>Choose image</span><input type="file" accept="image/jpeg,image/png,image/webp" onChange={chooseImage} disabled={uploadingImage || saving} /></label>
             <label><span>Image description</span><input value={imageAlt} maxLength={180} onChange={(event) => setImageAlt(event.target.value)} placeholder="e.g. Sage notebook with gold pen" /></label>
-            <div className="admin-product-image-actions">
-              <button type="button" onClick={uploadImage} disabled={(!imageFile && !imageUrl) || uploadingImage}>{uploadingImage ? "Working…" : imageFile ? imageUrl ? "Replace photograph" : "Upload photograph" : "Save image description"}</button>
-              {imageUrl && <button className="admin-remove-image" type="button" onClick={removeImage} disabled={uploadingImage}>Remove photograph</button>}
-            </div>
+            {isNew ? (
+              <p className="admin-new-image-hint">{createdProductId ? "The product is saved. Check the image and select Retry photograph upload." : "The photograph will upload automatically when you add the product."}</p>
+            ) : (
+              <div className="admin-product-image-actions">
+                <button type="button" onClick={uploadImage} disabled={(!imageFile && !imageUrl) || uploadingImage}>{uploadingImage ? "Working…" : imageFile ? imageUrl ? "Replace photograph" : "Upload photograph" : "Save image description"}</button>
+                {imageUrl && <button className="admin-remove-image" type="button" onClick={removeImage} disabled={uploadingImage}>Remove photograph</button>}
+              </div>
+            )}
             <span className={imageError ? "admin-image-message error" : "admin-image-message"} role={imageError ? "alert" : "status"}>{imageMessage}</span>
           </div>
         </section>
-      )}
       <div className="admin-product-form-grid">
         <label><span>Product name</span><input value={name} maxLength={120} onChange={(event) => setName(event.target.value)} required /></label>
         <label><span>Price (£)</span><input type="number" min="0.50" max="10000" step="0.01" value={price} onChange={(event) => setPrice(event.target.value)} required /></label>
@@ -246,7 +284,7 @@ function ProductEditor({ product, isNew = false, onSaved }: { product: ManagedPr
       <div className="admin-product-form-actions">
         <span className={isError ? "admin-save-message error" : "admin-save-message"} role={isError ? "alert" : "status"}>{message}</span>
         {!isNew && <button className="admin-archive-button" type="button" disabled={saving} onClick={() => saveProduct(undefined, !archived)}>{archived ? "Restore product" : "Archive product"}</button>}
-        <button className="admin-save-product" type="submit" disabled={saving}>{saving ? "Saving…" : isNew ? "Add to catalogue" : "Save changes"}</button>
+        <button className="admin-save-product" type="submit" disabled={saving || uploadingImage}>{saving ? imageFile ? "Saving product & photograph…" : "Saving…" : isNew ? createdProductId ? "Retry photograph upload" : imageFile ? "Add product & photograph" : "Add to catalogue" : "Save changes"}</button>
       </div>
     </form>
   );

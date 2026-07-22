@@ -98,6 +98,11 @@ test("Phase 5.1 stores validated photographs in R2 and preserves order image ref
   assert.match(checkoutRoute, /product_image_key/);
   assert.match(manager, /Upload photograph/);
   assert.match(manager, /Remove photograph/);
+  assert.match(manager, /Add product & photograph/);
+  assert.match(manager, /await uploadSelectedImage\(savedProductId\)/);
+  assert.match(manager, /setCreatedProductId\(savedProductId\)/);
+  assert.match(manager, /Retry photograph upload/);
+  assert.doesNotMatch(manager, /Save the product first, then reopen it/);
   assert.match(storefront, /product\.imageUrl/);
   assert.match(adminOrders, /item\.productImageKey/);
   assert.match(migration, /ADD `product_image_key`/);

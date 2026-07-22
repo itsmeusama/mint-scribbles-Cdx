@@ -67,9 +67,11 @@ npm run build
 
 ## Product photographs
 
-Create and save a product in the owner catalogue first. Reopen that product,
-choose one JPG, PNG or WebP image (up to 5MB), add a short description of what
-the image shows, and select **Upload photograph**. A later upload replaces the
+When creating a product, choose one JPG, PNG or WebP image (up to 5MB) and add
+a short description of what the image shows. Selecting **Add product &
+photograph** creates the D1 product and immediately uploads its image to R2. If
+only the image upload fails, the saved product is preserved and the same form
+offers a safe retry without creating a duplicate. A later upload replaces the
 current storefront photograph; removing it restores the selected visual style.
 
 D1 stores the product's image reference and description. R2 stores the image
