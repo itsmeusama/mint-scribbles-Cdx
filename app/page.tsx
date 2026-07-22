@@ -1,61 +1,9 @@
 "use client";
 
 import { FormEvent, useMemo, useState } from "react";
-
-type Product = {
-  id: string;
-  name: string;
-  price: number;
-  category: "Bundle" | "Individual" | "Custom";
-  description: string;
-  contents?: string;
-  visual: string;
-  badge?: string;
-};
+import { bundles, individualItems, type Product } from "../lib/catalog";
 
 type CartItem = Product & { quantity: number };
-
-const bundles: Product[] = [
-  {
-    id: "desk-reset",
-    name: "The Desk Reset",
-    price: 32,
-    category: "Bundle",
-    description: "A practical refresh for clear plans and calmer desks.",
-    contents: "Sage notebook · weekly pad · brass bookmark · black pencil",
-    visual: "desk",
-    badge: "Bestseller",
-  },
-  {
-    id: "correspondence-set",
-    name: "The Correspondence Set",
-    price: 26,
-    category: "Bundle",
-    description: "A thoughtful edit for notes worth sending by hand.",
-    contents: "8 writing sheets · 8 envelopes · 4 cards · sealing stickers",
-    visual: "letter",
-    badge: "Gift-ready",
-  },
-  {
-    id: "study-edit",
-    name: "The Study Edit",
-    price: 29,
-    category: "Bundle",
-    description: "A focused set for lectures, lists and deadline days.",
-    contents: "Project notebook · index cards · sticky tabs · 2 pencils",
-    visual: "study",
-    badge: "New edit",
-  },
-];
-
-const individualItems: Product[] = [
-  { id: "notebook", name: "Layflat Notebook", price: 12, category: "Individual", description: "A5, 160 ruled pages, sage linen cover.", visual: "notebook" },
-  { id: "weekly-pad", name: "Weekly Desk Pad", price: 8, category: "Individual", description: "Fifty tear-off sheets for a clearer week.", visual: "pad" },
-  { id: "notecards", name: "Botanical Notecards", price: 10, category: "Individual", description: "Six cards with warm ivory envelopes.", visual: "cards" },
-  { id: "pencils", name: "Writing Pencil Pair", price: 4, category: "Individual", description: "Forest lacquer with soft graphite cores.", visual: "pencils" },
-  { id: "tabs", name: "Paper Index Tabs", price: 5, category: "Individual", description: "Four muted shades, 120 tabs in total.", visual: "tabs" },
-  { id: "bookmark", name: "Brass Page Marker", price: 7, category: "Individual", description: "A slim, reusable marker with a soft sheen.", visual: "marker" },
-];
 
 const money = (value: number) => `£${value.toFixed(2)}`;
 
@@ -66,6 +14,9 @@ export default function Home() {
   const [builder, setBuilder] = useState<string[]>(["notebook", "weekly-pad"]);
   const [checkoutOpen, setCheckoutOpen] = useState(false);
   const [orderPlaced, setOrderPlaced] = useState(false);
+  const [orderReference, setOrderReference] = useState("");
+  const [orderError, setOrderError] = useState("");
+  const [submittingOrder, setSubmittingOrder] = useState(false);
   const [toast, setToast] = useState("");
 
   const itemCount = cart.reduce((sum, item) => sum + item.quantity, 0);
@@ -108,17 +59,44 @@ export default function Home() {
     setCartOpen(false);
     setCheckoutOpen(true);
     setOrderPlaced(false);
+    setOrderReference("");
+    setOrderError("");
   };
 
-  const submitOrder = (event: FormEvent<HTMLFormElement>) => {
+  const submitOrder = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    if (submittingOrder) return;
+
     const data = new FormData(event.currentTarget);
-    const payment = data.get("payment") === "deposit" ? "Bank deposit" : "Pay at collection";
-    const orderLines = cart.map((item) => `${item.quantity} × ${item.name} — ${money(item.price * item.quantity)}`).join("\n");
-    const subject = encodeURIComponent(`New Mint Scribbles order request — ${data.get("name")}`);
-    const body = encodeURIComponent(`Customer: ${data.get("name")}\nEmail: ${data.get("email")}\nPhone: ${data.get("phone")}\nCollection day: ${data.get("collection")}\nPayment: ${payment}\n\n${orderLines}\n\nTotal: ${money(subtotal)}\n\nNotes: ${data.get("notes") || "None"}`);
-    setOrderPlaced(true);
-    window.location.href = `mailto:mohamedusama881@gmail.com?subject=${subject}&body=${body}`;
+    setSubmittingOrder(true);
+    setOrderError("");
+
+    try {
+      const response = await fetch("/api/orders", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          customerName: data.get("name"),
+          email: data.get("email"),
+          phone: data.get("phone"),
+          collectionDay: data.get("collection"),
+          paymentMethod: data.get("payment"),
+          notes: data.get("notes"),
+          items: cart.map((item) => ({ productId: item.id, quantity: item.quantity })),
+        }),
+      });
+      const result = await response.json() as { reference?: string; error?: string };
+      if (!response.ok || !result.reference) {
+        throw new Error(result.error || "We could not save your order just now.");
+      }
+
+      setOrderReference(result.reference);
+      setOrderPlaced(true);
+    } catch (error) {
+      setOrderError(error instanceof Error ? error.message : "We could not save your order just now.");
+    } finally {
+      setSubmittingOrder(false);
+    }
   };
 
   return (
@@ -255,13 +233,13 @@ export default function Home() {
         <button className="modal-backdrop" onClick={() => setCheckoutOpen(false)} aria-label="Close checkout" />
         <div className="checkout-card">
           <button className="close-button" onClick={() => setCheckoutOpen(false)} aria-label="Close checkout">×</button>
-          {orderPlaced ? <div className="order-confirmation"><span>✓</span><p className="eyebrow">Order request prepared</p><h2>Thank you — nearly there.</h2><p>Your email app should now open with the full order request ready to send. Once it is sent, we will confirm collection and payment details personally.</p><button className="button primary" onClick={() => { setCheckoutOpen(false); setCart([]); }}>Done</button></div> : <form onSubmit={submitOrder}>
+          {orderPlaced ? <div className="order-confirmation"><span>✓</span><p className="eyebrow">Order request received</p><h2>Thank you — your order is saved.</h2><p>We will confirm availability, collection and payment details personally by email.</p><div className="order-reference"><small>Your order reference</small><strong>{orderReference}</strong></div><button className="button primary" onClick={() => { setCheckoutOpen(false); setCart([]); }}>Done</button></div> : <form onSubmit={submitOrder}>
             <div className="checkout-heading"><p className="eyebrow">Reserve your order</p><h2 id="checkout-title">Collection checkout</h2><p>No payment is taken on this page.</p></div>
             <div className="checkout-layout"><div className="checkout-fields">
               <fieldset><legend>1. Your details</legend><label>Full name<input name="name" autoComplete="name" required /></label><div className="field-row"><label>Email<input type="email" name="email" autoComplete="email" required /></label><label>Phone<input type="tel" name="phone" autoComplete="tel" required /></label></div></fieldset>
               <fieldset><legend>2. Collection</legend><label>Preferred collection day<select name="collection" required defaultValue=""><option value="" disabled>Choose a day</option><option>Tuesday</option><option>Wednesday</option><option>Thursday</option><option>Friday</option><option>Saturday</option></select></label><label>Gift note or order notes<textarea name="notes" rows={3} placeholder="Optional" /></label></fieldset>
               <fieldset><legend>3. Payment choice</legend><label className="payment-option"><input type="radio" name="payment" value="collection" defaultChecked /><span><strong>Pay at collection</strong><small>Pay when you collect your parcel.</small></span></label><label className="payment-option"><input type="radio" name="payment" value="deposit" /><span><strong>Bank deposit</strong><small>Account details are sent after we receive your request.</small></span></label></fieldset>
-            </div><aside className="order-summary"><h3>Your order</h3>{cart.map((item) => <p key={item.id}><span>{item.quantity} × {item.name}</span><strong>{money(item.price * item.quantity)}</strong></p>)}<div><span>Total</span><strong>{money(subtotal)}</strong></div><small>By placing this request, you agree that availability and collection time will be confirmed by email.</small><button className="button primary full" type="submit">Place order request</button></aside></div>
+            </div><aside className="order-summary"><h3>Your order</h3>{cart.map((item) => <p key={item.id}><span>{item.quantity} × {item.name}</span><strong>{money(item.price * item.quantity)}</strong></p>)}<div><span>Total</span><strong>{money(subtotal)}</strong></div><small>By placing this request, you agree that availability and collection time will be confirmed by email.</small>{orderError && <p className="checkout-error" role="alert">{orderError}</p>}<button className="button primary full" type="submit" disabled={submittingOrder}>{submittingOrder ? "Saving your order…" : "Place order request"}</button></aside></div>
           </form>}
         </div>
       </div>}

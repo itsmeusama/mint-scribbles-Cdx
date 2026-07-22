@@ -1,9 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import {
-  chatGPTSignOutPath,
-  requireChatGPTUser,
-} from "../chatgpt-auth";
+import { getMintAdminAccess } from "../admin-access";
+import { chatGPTSignOutPath } from "../chatgpt-auth";
 import "./admin.css";
 
 export const dynamic = "force-dynamic";
@@ -17,9 +15,7 @@ export const metadata: Metadata = {
 export default async function AdminLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
-  const user = await requireChatGPTUser("/admin");
-  const ownerEmail = process.env.MINT_ADMIN_EMAIL?.trim().toLowerCase();
-  const isOwner = ownerEmail && user.email.trim().toLowerCase() === ownerEmail;
+  const { user, ownerEmail, isOwner } = await getMintAdminAccess("/admin");
 
   if (!ownerEmail) {
     return (
@@ -81,8 +77,8 @@ export default async function AdminLayout({
 
         <div className="admin-phase-note">
           <small>Current release</small>
-          <strong>Phase 1</strong>
-          <p>Secure access and the admin foundation.</p>
+          <strong>Phase 2</strong>
+          <p>Reliable order capture and the owner order inbox.</p>
         </div>
 
         <div className="admin-account">
